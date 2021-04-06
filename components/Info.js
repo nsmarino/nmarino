@@ -13,9 +13,9 @@ export default function Info() {
       <h2>Info</h2>
       <div className="selfie">
       <Image
-        width={3024}
-        height={4032}
-        layout='responsive'
+        width={768}
+        height={1024}
+        quality={100}
         src={'/aero.jpg'}
         alt={'at aerobed'}
       />

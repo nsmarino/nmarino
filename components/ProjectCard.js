@@ -14,7 +14,7 @@ export default function ProjectCard({ project }) {
         <Image
           width={project.images[0].width}
           height={project.images[0].height}
-          layout='responsive'
+          quality={100}
           src={project.images[0].src}
           alt={project.images[0].alt}
         />      
