@@ -1,5 +1,7 @@
 import BlogCard from './BlogCard'
 
+import { under768 } from '../styles/mediaQueries'
+
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
 import { sectionLabel, topLine } from '../styles/partials'
@@ -21,5 +23,13 @@ const styles = css`
   
   h2 {
     ${sectionLabel}
+  }
+  
+  ${under768} { 
+    margin-top: 0px;
+    h2 {
+      font-size: 200%;
+      font-family: Computer-Modern;
+    }
   }
 `

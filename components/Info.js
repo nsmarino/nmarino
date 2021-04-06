@@ -1,6 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
 
+import { under768 } from '../styles/mediaQueries'
+
 import Image from 'next/image'
 import { sectionHead, sectionLabel, sectionText, techieLink, topLine } from '../styles/partials'
 import Toggle from './Toggle'
@@ -18,8 +20,9 @@ export default function Info() {
         alt={'at aerobed'}
       />
       </div>
-      <h1>Nicholas Marino</h1>
-          <p>Welcome to my page! I am a web developer and computer game designer based in Brooklyn, NY. I'm passionate about film, nature and software. Email me at <a href="mailto: contact@nmarino.dev">contact@nmarino.dev</a> if you'd like to work together, or find me on <a href="https://twitter.com/yard__">twitter</a> or <a href="https://github.com/nsmarino">github</a>.</p>
+        <h1>Nicholas Marino</h1>
+        
+          <p>Welcome to my page! I am a web developer based in Brooklyn, NY. I'm passionate about BBC Planet Earth, computer games, and film. Email me at <a href="mailto: contact@nmarino.dev">contact@nmarino.dev</a> if you'd like to work together, or find me on <a href="https://twitter.com/yard__">twitter</a> or <a href="https://github.com/nsmarino">github</a>.</p>
          
           <div className="transitionControl">
             <p style={{marginBottom: '0'}}>Page Transitions</p>
@@ -59,5 +62,19 @@ p {
 }
 a {
   ${techieLink}
+}
+
+${under768} { 
+  margin-top: 25px; 
+  margin-bottom: 0px;
+  h2 {
+    display: none;
+  }
+  .selfie {
+    width: 50%;
+    font-size:0;
+    padding-top:25px;
+    padding-bottom: 25px;
+  }   
 }
 `

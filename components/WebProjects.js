@@ -1,4 +1,5 @@
 import ProjectCard from './ProjectCard'
+import { under768 } from '../styles/mediaQueries'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
@@ -22,4 +23,13 @@ const styles = css`
   h2 {
     ${sectionLabel}
   }
+
+  ${under768} { 
+    margin-bottom: 20px;
+    h2 {
+      font-size: 200%;
+      font-family: Computer-Modern;
+    }
+  }
+
 `

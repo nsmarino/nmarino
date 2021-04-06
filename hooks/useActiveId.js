@@ -20,9 +20,10 @@ function useActiveId(itemIds) {
     });
 
     return () => {
-      itemIds.forEach((id) => {
-        observer.unobserve(document.getElementById(id));
-      });
+      observer.disconnect()
+      // itemIds.forEach((id) => {
+      //   observer.unobserve(document.getElementById(id));
+      // });
     };
   }, [itemIds]);
 

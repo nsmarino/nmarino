@@ -29,8 +29,8 @@ const styles=css`
       p {
         font-family: Arial;
         font-size: 60%;
-        opacity: 0.6;
         padding-bottom: 5px;
+        color: #666;
       }
   }
 
@@ -40,6 +40,7 @@ const styles=css`
 
   p {
     ${sectionText}
+    color: #666;
   }
 
   :hover {

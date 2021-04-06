@@ -12,11 +12,11 @@ export default function ProjectCard({ project }) {
     <div css={styles}>
       <div className="wrapper">
         <Image
-          width={project.img.width}
-          height={project.img.height}
+          width={project.images[0].width}
+          height={project.images[0].height}
           layout='responsive'
-          src={project.img.src}
-          alt={project.img.alt}
+          src={project.images[0].src}
+          alt={project.images[0].alt}
         />      
       </div>
       <h3>{project.title}</h3>
@@ -36,6 +36,7 @@ const styles=css`
 
   p {
     ${sectionText}
+    color: #666;
   }
   
   :hover {

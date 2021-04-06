@@ -1,6 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
 
+import { under768 } from './mediaQueries'
+ 
 export const topLine = css`
   border-top: 1px solid black;
   margin-top: 50px;
@@ -9,12 +11,17 @@ export const topLine = css`
 export const cardShape = css`
   border-bottom: 1px solid grey;
   padding: 20px;
+
+  ${under768} {
+    :last-of-type {
+      border-bottom: none;
+    }
+  }
 `
 
 export const sectionLabel = css`
   font-family: Arial;
   font-weight: normal;
-  opacity: 0.8;
   font-size: 60%;
   margin: 0;
   margin-top:2px;
@@ -38,9 +45,10 @@ export const articleHead = css`
 export const articleSubHead = css`
   font-weight: normal;
   font-family: Computer-Modern;
-  opacity: 0.6;
   width: fit-content;
   font-size: 150%;
+  margin-top: 2.5rem;
+  margin-bottom: -.5rem;
 `
 
 export const cardHead = css`
@@ -56,13 +64,11 @@ export const cardHead = css`
 
 export const sectionText = css`
   font-family: Computer-Modern;
-  opacity: 0.8;
   font-size: 80%;
   margin: 0;
 `
 export const articleText = css`
   width: 80%;
-  opacity: 80%;
   font-family: Computer-Modern;
 `
 
@@ -70,7 +76,6 @@ export const summary = css`
   font-weight: normal;
   font-family: Computer-Modern;
   font-size: 117%;
-  opacity: 0.9;
   border-bottom: 1px dashed grey;
   width: fit-content;
   margin-top: 50px;

@@ -6,6 +6,7 @@ const styles = css`
   summary {
     ${summary}
   }
+  font-family: Computer-Modern;
 `
 
 const Detail = ({sum, children}) => {

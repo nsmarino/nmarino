@@ -5,6 +5,9 @@ import slugify from '../utils/slugify'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
+import { sectionLabel, topLine, techieLink } from '../styles/partials'
+
+import { under768 } from '../styles/mediaQueries'
 
 const LinkInTOC = ({heading, active}) => {
   const { query } = useRouter()
@@ -18,25 +21,62 @@ const LinkInTOC = ({heading, active}) => {
 }
 
 const TOC = ({headings}) => {
-const headingIds = headings.map(heading=>slugify(heading))
+  const headingIds = headings.map(heading=>slugify(heading))
+  const activeId = useActiveId(headingIds)
 
-const activeId = useActiveId(headingIds)
+  return (
+    <nav css={styles}>
+      <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
 
-return (
-  <aside style={{position: 'fixed'}}>
-    {headings.map(h=> <LinkInTOC heading={h} key={h} active={activeId} />)}
-  </aside>
-)
+      {headings.map(h=> <LinkInTOC heading={h} key={h} active={activeId} />)}
+    </nav>
+  )
 }
+
+const styles = css`
+  ${under768} {
+    display: none;
+  }
+
+  ${topLine}
+    margin: 50px;
+    position: fixed;
+    top: 0px;
+    width: 250px;
+
+  .navToIndex {
+    ${sectionLabel}
+    color: blue;
+    display: block;
+    margin-bottom: 50px;
+    margin-top: 4px;
+
+    :hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  a {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 80%;
+    :hover {
+    color: blue;
+  }
+  }
+`
+
 
 const LINK_CSS = css`
 a {
-  color: red;
+  font-weight:normal;
+  text-decoration:none;
 }
 `
 const ACTIVE_CSS = css`
 a {
-  color: blue;
+  font-weight:bold;
+  text-decoration:underline;
 }
 `
 
