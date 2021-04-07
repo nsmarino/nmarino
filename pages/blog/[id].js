@@ -133,6 +133,7 @@ const styles = css`
 
   img {
     margin-top: 1rem;
+    max-width: 100%;
   }
 
   ${under768} {
