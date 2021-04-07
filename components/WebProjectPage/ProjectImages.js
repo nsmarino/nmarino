@@ -11,6 +11,7 @@ const styles = css`
   width: 300px;
   flex: 1 1 300px;
   margin: 50px;
+  padding: 20px;
 
 ${under768} {
     width: unset;
@@ -22,15 +23,16 @@ ${under768} {
 const Images = ({images}) => {
   return (
     <aside css={styles}>
-      {images.map(image=> 
+      {images.map(image=>
+      <div style={{marginBottom: '20px'}} key={image.alt}>
         <Image
           width={image.width}
           height={image.height}
           layout='responsive'
           src={image.src}
           alt={image.alt}
-          key={image.alt}
         />
+      </div> 
       )}
     </aside>
   )
