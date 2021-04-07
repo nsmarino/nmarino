@@ -1,8 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { topLine } from '../styles/partials'
 
-import { under768 } from '../styles/mediaQueries'
+import { topLine } from 'styles/partials'
+import { under768 } from 'styles/mediaQueries'
 
 import Image from 'next/image'
 

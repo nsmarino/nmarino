@@ -6,4 +6,378 @@ date: 2 Mar 2021
 wordCount: 1026
 ---
 
-Hi kids, do you like Primus?
+<img src="/blog/interactive-svg/immortal-mtn-chapter-click.gif" alt="Interactive SVG Image depicted a simple mountain pictograph" />
+
+## Introduction
+I prototyped a simple point-and-click game in React, using [Greensock](https://greensock.com/gsap/) to manage animations and [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) as a rendering medium. I took on this project for two reasons.
+
+First, I wanted to learn how to use Greensock and React together. Greensock is a great animation library but it is not designed to be used with React, and I wanted to write some code that would integrate the two and allow me to use the best features from each.
+
+Second, I have long been curious about SVG and its potential for interactivity. If React is a framework for building interactive user interfaces, and SVG is a image format that supports interactivity and animation, it seemed to me that they could be used together to create point-and-click games reminiscent of early Flash games. 
+
+SVG stands for 'Scalable Vector Graphics,' and I remain fascinated by the way that you can resize or zoom into SVG images and they remain crisp and clear. This seemed loaded with gameplay potential.
+
+### Idea for game
+Like many modern game developers, I was heavily inspired by the [Dark Souls series](https://www.youtube.com/watch?v=Lx7BWayWu08&ab_channel=GameMaker%27sToolkit). In this series, you begin each new level by [gazing out](https://i.imgur.com/C6LyxOB.png) onto a detailed landscape full of [intriguing locations](https://cdn.gamer-network.net/2016/usgamer/DarkSouls3Preview1Spot1.jpg) that you will soon explore. I thought it would be an interesting challenge to make the entire game that opening vista, and use SVG zooms to create a "soulslike point and click."
+
+Using this idea, I came up with a game called "The Immortal Mountain" with the following elevator pitch: The player is attempting to climb a mountain to [heaven](http://catdir.loc.gov/catdir/enhancements/fy0707/2001059658-s.html) and thus achieve [immortality](https://matiane.wordpress.com/2019/10/11/immortal-by-jorge-luis-borges/). To get to heaven, they will need to traverse a tunnel through the center of the mountain, solving puzzles along the way. This idea, of a tunnel spiraling upward through a mountain, seemed to fit with my idea of traversing through zooms. I would use React for state management (keeping track of which puzzles have been solved) and conditional rendering (rendering new locations and puzzles as the player unlocks them). Greensock would be used to animate the interactive clickable bits and smoothly transition between different zoom levels. 
+
+## Using React and Greensock together
+React is a framework for creating interactive user interfaces. It is designed around the concept of 'state,' which refers to any changeable information that affects the behavior of the interface. React uses a ['virtual DOM'](https://reactjs.org/docs/faq-internals.html) to efficiently update and re-render only the components of the application that are affected by specific changes in state. The name of the framework is a clue to how it should be used. In an ideal React application, state changes are tracked in a central location, and different components 'react' to these changes by changing their behavior accordingly. 
+
+Greensock is not designed for use with a virtual DOM. It manages applications by working directly with DOM nodes. To use Greensock with React, we need to first get a reference to the DOM node we want to animate, then create a [timeline object](https://greensock.com/docs/v3/GSAP/Timeline) that persists through re-renders so we can play it and pause it in response to different events in the game (for example, when the player clicks something). This is a lot of logic to do for every single thing we want to animate. When you have complex logic involving state and rendering that you will need to reuse throughout your application, React provides a solution in the form of [custom hooks](https://reactjs.org/docs/hooks-custom.html). I created a useTimelines hook and a useZoom hook to reconcile the design differences between React and Greensock and more easily use the best features from each. 
+
+## Designing a prototype in Adobe Illustrator
+
+<img src="/blog/interactive-svg/immortal-mtn-in-illustrator.png" alt="immortal mountain in adobe illustrator" />
+
+For the prototype, I used Adobe Illustrator to create a pictograph-like depiction of a mountain (i.e., a bumpy line) with the grandiose words 'CHAPTER ONE' underneath. I wanted to set up two modes of interaction:
+- The user can click on CHAPTER ONE to zoom in to a scene
+- In that scene, clicking on interactive elements will affect the state of the app and start/stop animations accordingly.
+
+To make the SVG easy to deal with in React, it is important to separate the different parts of the drawing into named layers.
+
+<img src="/blog/interactive-svg/svg-layers.png" alt="Different layers of svg image in illustrator" />
+
+After preparing the svg for export, I click "Show Code" to see the raw SVG markup in a .txt file. It's easier to just copy it from there and paste it into my React app.
+
+<img src="/blog/interactive-svg/svg-settings.png" alt="Settings used for svg export" />
+
+I removed the boilerplate from [create-react-app](https://github.com/facebook/create-react-app) and set up the basic skeleton of the prototype:
+
+```javascript
+import SVGContainer from './components/SVGContainer'
+import ChapterOne from './components/ChapterOne'
+import Title from './components/Title'
+import './App.css'
+
+const App = () => {
+  return (
+  <main>
+    <SVGContainer> // We'll manage the zoom level here.   
+      <Title /> // The title and mountain - not interactive 
+      <ChapterOne /> // The scene we zoom into
+    </SVGContainer>
+  </main>
+  )
+}
+
+export default App
+```
+
+## Zooming in on click
+We can control the zoom level of the SVG by changing the size of its [viewBox](https://webdesign.tutsplus.com/tutorials/svg-viewport-and-viewbox-for-beginners--cms-30844) attribute. We need to do the following:
+
+- Keep track of the current zoom state so that all components are aware of it
+- Change zoom state by clicking on CHAPTER ONE
+- Animate change in zoom state with Greensock
+
+I use a custom hook called useZoom to track the zoom state with a useState hook and return functions for updating that state.
+
+```javascript
+import { useState } from 'react'
+import {fullView} from '../constants'
+
+const useZoom = () => {
+  const [zoom, setZoom] = useState(fullView)
+
+  const enter = (chapter, transition) => {
+    setZoom(chapter)
+// Play a transition animation when we zoom in.
+// We will set up a simple fade animation to use.
+    transition.restart()
+  }
+
+  const leave = (transition) => {
+    setZoom(fullView)
+// Reverse that transition when zooming out.
+    transition.reverse()
+  }
+
+  return [enter, leave, zoom]
+}
+
+export default useZoom
+```
+
+At the app level, we can feed these props to the components that need them:
+
+```javascript
+import useZoom from './hooks/useZoom'
+import SVGContainer from './components/SVGContainer'
+import ChapterOne from './components/ChapterOne'
+import Title from './components/Title'
+import './App.css'
+
+const App = () => {
+  // The state is managed at the top level of the app
+  const [enter, leave, zoom] = useZoom()
+
+  return (
+  <main>
+  // the SVG container re-renders when the zoom level changes
+    <SVGContainer zoom={zoom}>
+      <Title />  
+  // Elements in the ChapterOne component can change the zoom level
+      <ChapterOne enter={enter} leave={leave} />  
+    </SVGContainer>
+  </main>
+  )
+}
+
+export default App
+```
+
+The SVGContainer component will use React's useEffect hook, which manages side effects, to trigger a greensock animation that smoothly changes the size of the viewBox attribute when the zoom variable changes.
+
+```javascript
+import { useRef, useEffect } from 'react'
+import gsap from 'gsap'
+import { fullView, zoomSpeed } from '../constants'
+
+const SVGContainer = ({children, zoom}) => {
+  // We target the container's DOM node
+  // with a useRef hook
+  const containerRef=useRef()
+  
+  useEffect(() => {
+  // Simple greensock animation that plays 
+  // everytime the zoom changes
+    gsap.to(containerRef.current, {
+      attr:{viewBox:zoom}, 
+      duration: zoomSpeed,
+    })
+  }, [zoom])
+
+  return (
+  <svg 
+    // Element is tagged with a ref so we can keep track of it.
+    ref={containerRef}
+    viewBox={fullView}
+    preserveAspectRatio="xMidYMid meet"
+  >
+    {children}
+  </svg>
+  )
+}
+
+export default SVGContainer
+```
+
+Now that we have a way to zoom in and out, we can make it so that clicking on 'Chapter One' zooms into the scene.
+
+Here is the ChapterOne component. I have omitted the bulk of the svg markup for readability.
+
+```javascript
+// custom hook for using greensock timelines
+import useTimelines from '../hooks/useTimelines'
+import { chapterOneView} from '../constants'
+import { showChapter } from '../animations'
+
+// Animations are grouped into an array outside of
+// the component so they are not re-created
+// every time the component re-renders.
+const chapterAnimations = [showChapter]
+
+const ChapterOne = ({enter, leave}) => {
+  const [chapterRef, { showChapter }] = useTimelines(chapterAnimations)
+
+  return (<>
+  // We change the zoom level with the showChapter transition. 
+    <text onClick={() => enter(chapterOneView, showChapter)}>CHAPTER ONE</text>
+
+    <g id="chapterOne" class="chapter" ref={chapterRef}>
+      // ...Rest of SVG markup (omitted)
+
+  // Here we zoom out and reverse the showChapter transition.
+      <text onClick={() => leave(showChapter)}>-back</text>
+    </g>
+  </>
+  )
+}
+
+export default ChapterOne
+```
+
+Clicking on 'Chapter One' changes zoom level, re-rendering the SVG Container with a smooth Greensock animation. The scene hidden inside the O of 'Chapter One' fades into view. Clicking 'back' inside the scene will reverse the animation and return us to the original zoom level.
+
+<img src="/blog/interactive-svg/immortal-mtn-chapter-click.gif" alt="Interactive SVG Image depicted a simple mountain pictograph" />
+
+## The useTimelines Custom Hook
+The showChapter animation is stored as a function inside a file called 'animations.js.'
+```javascript
+import gsap from 'gsap'
+
+// When the function is called, it creates
+// a timeline object that targets the DOM
+// node that is passed as argument.
+export const showChapter = (target) => 
+  gsap.timeline({paused:true})
+    .set(target, {display: 'block'})
+    .to(target, {opacity: 1, duration: 2})
+```
+
+We store the animation as a function because we only want to create the animation after the DOM has rendered and we can target the actual DOM element with a useRef hook. The logic for managing animations is handled in a custom useTimelines hook.
+
+```javascript
+import { useRef, useState, useEffect } from 'react'
+
+const useTimelines = (animations) => {
+  // This ref will be returned from the hook
+  // for attaching to the DOM node we want to target.
+  const ref = useRef()
+
+  // This array will become populated with Greensock timeline objects
+  // when the effect hook fires.
+  const [timelines, setTimelines] = useState([])
+
+  useEffect(() => {
+    // The timelines are only created once the element tagged
+    // with our ref has rendered.
+    if (ref.current) {
+      const updatedTimelines = animations.map(animation=> (
+        // We use ES6 bracket notation to get the name
+        // of the animation function, then call the function
+        // with the ref'd DOM node as target.
+        {[animation.name]: animation(ref.current)}
+        )
+      )
+      // We convert the timelines array to an object so we
+      // can easily use the various animations.
+      setTimelines(Object.assign(...updatedTimelines))
+    }
+  // This effect hook will only fire when the referenced node is mounted.
+  }, [ref, animations]) 
+
+  return [ref, timelines]
+}
+
+export default useTimelines
+```
+
+## Adding interactivity to the scene
+In addition to using this useTimelines hook for chapter transitions, we can use it for adding animations to the interactive elements of the scene. The prototype scene is simple: there's a lever you can click. When you click it, the lever will play a 'pull lever' animation and the gears on the little machine will start turning. I wrote an animation for the lever and for the gears:
+
+```javascript
+export const pullLever = (target) => 
+  gsap.timeline({paused: true})
+    .to(target.querySelector('#shaft'), 
+      {
+        rotation: 45, 
+        transformOrigin: '50% 100%', 
+        duration: 1
+      }
+    )
+    .to(target.querySelector('#shaft'), 
+      {
+        rotation: -36, 
+        transformOrigin: '50% 100%', 
+        duration: 0.5
+      }
+    )
+
+export const turnGear = (target) => 
+  gsap.timeline({paused: true, repeat: -1})
+    .to(target, 
+      {
+        rotation: 360, 
+        transformOrigin: '50% 50%', 
+        duration: 2, 
+        ease:'none'
+      }
+    )
+```
+
+I then updated the ChapterOne component so clicking the lever triggers the pullLever animation...which updates the gearsTurning state...and which, on completion, fires a function that will play or pause the turnGear animation on the big gear and the little gear. I decided to use a useState hook for keeping track of whether or not the gears were turning in observance of the principle of 'separation of concerns': Greensock for animations, React for state management!
+
+```javascript
+import useTimelines from '../hooks/useTimelines'
+import { useState } from 'react'
+import { chapterOneView} from '../constants'
+// highlight-next-line
+import { pullLever, turnGear, showChapter } from '../animations'
+
+const chapterAnimations = [showChapter]
+// highlight-start
+const gearAnimations = [turnGear]
+const leverAnimations = [pullLever]
+// highlight-end
+
+const ChapterOne = ({enter, leave}) => {
+  // highlight-next-line
+  const [gearsTurning, setGearsTurning] = useState(false)
+ 
+  // highlight-start
+  const [chapterRef, { showChapter }] = useTimelines(chapterAnimations)
+  const [bigGearRef, bigGearTimelines] = useTimelines(gearAnimations)
+  const [smallGearRef, smallGearTimelines] = useTimelines(gearAnimations)
+  const [leverRef, { pullLever }] = useTimelines(leverAnimations)
+
+  const handleLeverClick = () => {
+      pullLever.restart()
+      pullLever.eventCallback("onComplete", () => {
+        if (gearsTurning) {
+          bigGearTimelines.turnGear.pause()
+          smallGearTimelines.turnGear.pause()
+        }
+        if (!gearsTurning) {
+          bigGearTimelines.turnGear.play()
+          smallGearTimelines.turnGear.play()
+        }
+        setGearsTurning(!gearsTurning)
+      });
+  }
+  // highlight-end
+
+  return (<>
+  <text onClick={() => enter(chapterOneView, showChapter)}>CHAPTER ONE</text>
+  
+  <g id="chapterOne" class="chapter" ref={chapterRef}>
+    // Non-interactive parts of scene omitted
+
+    <g id="machine">
+    // highlight-start
+      <g id="bigGear" ref={bigGearRef}>...</g>
+      <g id="smallGear" ref={smallGearRef}>...</g>
+    // highlight-end
+    </g>
+
+<g id="Lever"
+  // highlight-start
+  class="click" ref={leverRef} 
+  onClick={handleLeverClick}>
+  // highlight-end
+  ...</g>
+
+<text onClick={() => leave(showChapter)}>-back</text>
+</g>
+</>
+  )
+}
+
+export default ChapterOne
+```
+
+The lever now starts and stops the gears when clicked.
+
+<img src="/blog/interactive-svg/immortal-mtn-lever-pull.gif" alt="Lever is clicked and triggers gear animation" />
+
+## Next steps
+Developing this prototype helped me think more critically about working with React's rendering philosophy instead of against it, and I got a lot more comfortable implementing custom hooks for complex reusable component logic. If I were to continue working on this project, I would work on the game design before doing any further programming, then refine and refactor the hooks and animations according to the dictates of the game. If the state got complicated, I would probably consider using [Redux](https://redux.js.org/). It would also be interesting to make sure the interactive SVG elements are [as accessible as possible](https://css-tricks.com/accessible-svgs/). 
+
+The repo for this project can be found on my [github](https://github.com/nsmarino/point-and-click).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

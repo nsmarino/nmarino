@@ -5,22 +5,22 @@ import matter from 'gray-matter'
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
 import Link from 'next/link'
-import Image from 'next/image'
+
 import { 
   sectionLabel, 
   articleHead, 
   topLine, 
   articleText, 
   techieLink 
-} from '../../styles/partials'
+} from 'styles/partials'
 
-import { getIdsFromDirectory, getFileContents } from '../../utils/fs'
+import { getIdsFromDirectory, getFileContents } from 'utils/fs'
 
-import Layout from '../../components/Layout'
-import Detail from '../../components/Detail'
-import Images from '../../components/ProjectImages'
+import Layout from '@/components/Layout'
+import Detail from '@/components/WebProjectPage/Detail'
+import Images from '@/components/WebProjectPage/ProjectImages'
 
-import { under768 } from '../../styles/mediaQueries'
+import { under768 } from 'styles/mediaQueries'
 
 const components = { Detail, }
 
@@ -73,6 +73,7 @@ const styles = css`
   p {
     ${articleText}
   }
+
   a {
     ${techieLink}
   }

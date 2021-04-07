@@ -11,10 +11,11 @@ body {
   font-weight: 400;
   font-display: swap;
 }
-/* 
-* {
-  font-family: Computer-Modern;
-} */
+
+/* Keep for now: */
+body { 
+  background: hsl(0,0%,97%); 
+}
 
 a {
   color: inherit;

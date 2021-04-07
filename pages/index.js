@@ -5,9 +5,9 @@ import { under768 } from '../styles/mediaQueries'
 import { getFrontMatterForIndex } from '../utils/fs'
 
 import Layout from '../components/Layout'
-import Info from '../components/Info'
-import Blogs from '../components/Blogs'
-import WebProjects from '../components/WebProjects'
+import Info from '../components/IndexPage/Info'
+import Blogs from '../components/IndexPage/Blogs'
+import WebProjects from '../components/IndexPage/WebProjects'
 
 export default function Home({ blogData, webprojectsData }) {
   return (

@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import useActiveId from '../hooks/useActiveId'
-import slugify from '../utils/slugify'
+import useActiveId from 'hooks/useActiveId'
+import slugify from 'utils/slugify'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { sectionLabel, topLine, techieLink } from '../styles/partials'
+import { sectionLabel, topLine, techieLink } from 'styles/partials'
 
-import { under768 } from '../styles/mediaQueries'
+import { under768 } from 'styles/mediaQueries'
 
 const LinkInTOC = ({heading, active}) => {
   const { query } = useRouter()
@@ -58,8 +58,12 @@ const styles = css`
   }
 
   a {
+    display: block;
+    width: fit-content;
     font-family: 'Courier New', Courier, monospace;
     font-size: 80%;
+    margin-bottom: 5px;
+
     :hover {
     color: blue;
   }
@@ -71,12 +75,14 @@ const LINK_CSS = css`
 a {
   font-weight:normal;
   text-decoration:none;
+  border-bottom: 2px solid transparent;
 }
 `
 const ACTIVE_CSS = css`
 a {
   font-weight:bold;
-  text-decoration:underline;
+  /* text-decoration:underline; */
+  border-bottom: 2px solid blue;
 }
 `
 

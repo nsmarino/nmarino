@@ -1,9 +1,9 @@
 import ProjectCard from './ProjectCard'
-import { under768 } from '../styles/mediaQueries'
+import { under768 } from 'styles/mediaQueries'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { sectionLabel, topLine } from '../styles/partials'
+import { sectionLabel, topLine } from 'styles/partials'
 
 export default function WebProjects({ projects }) {
   return (

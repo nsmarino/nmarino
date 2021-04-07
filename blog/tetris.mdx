@@ -92,3 +92,482 @@ function Block(x,y,color) {
 }
 
 ```
+Let's update the sketch.js file to display our tetromino.
+
+```javascript
+// Sketch.js:
+const tileCount = 10
+let tileSize
+
+// define tetromino globally so setup()
+// and draw() both have access to it
+let tetromino
+
+function setup() {
+  createCanvas(200, 400);
+  tileSize=width/tileCount 
+  // use new keyword to create instance of Tetromino
+  tetromino = new Tetromino() 
+}
+
+function draw() {
+  background(50);
+
+  // Call display function of tetromino, which
+  // calls display function for each of its blocks.
+  tetromino.display()
+}
+```
+Each time we run our sketch, we get a random tetromino in the upper left corner.
+
+<img 
+  src='/blog/tetris/rendered-tetromino.png' 
+  alt="rendered tetromino" 
+/>
+
+## Making the Tetromino Fall
+The default framerate of p5js is 60 frames per second, which means that the draw() function fires 60 times every second. Let's update the tetromino's position every 15 seconds. Again, the tetromino will serve as a manager for the blocks that form it. 
+
+I try to name my functions and variables as clearly as possible, so you can read the code like a sentence. If tetromino CAN go down...go down!
+
+```javascript
+// Tetromino.js:
+
+function Tetromino(type=randomType()) {
+  // ... rest of tetromino code ...
+
+  // Checks position of each block by calling
+  // block's downIsBlocked() function
+  this.canGoDown = function() {
+    let downIsClear = true
+    for (const block of this.blocks) {
+      if (block.downIsBlocked()) downIsClear = false
+    }
+    return downIsClear
+  }
+
+  // Updates the position of each block with 
+  // block's goDown() function
+  this.goDown = function() {
+    this.origin.y = this.origin.y + tileSize
+    for (const block of this.blocks) {
+      block.goDown()
+    }
+  }
+  
+  // Checks position of tetromino and updates it
+  // at regular intervals determined by global
+  // variable 'speed' in sketch.js
+  this.update = function() {
+    if (frameCount%speed===0) {
+      if (this.canGoDown()) {
+        this.goDown()
+      }
+    }
+  }
+}
+
+function Block(x,y,color) {
+  // ... rest of Block code ...
+
+  this.downIsBlocked = function() {
+    let downIsBlocked = false
+    // Checks if block is at bottom of screen.
+    if (this.y+tileSize === height) downIsBlocked = true
+    return downIsBlocked
+  }
+
+  this.goDown = function() {
+    this.y = this.y + tileSize
+  }
+}
+```
+The following lines can be added to sketch.js:
+
+```javascript
+// Sketch.js:
+
+const tileCount = 10
+let tileSize
+// highlight-next-line
+let speed = 15
+
+let tetromino
+
+function setup() {
+  createCanvas(200, 400);
+  tileSize=width/tileCount 
+  tetromino = new Tetromino() 
+}
+
+function draw() {
+  background(50);
+
+  tetromino.display()
+  // highlight-next-line
+  tetromino.update()
+}
+```
+
+When we run our sketch, our tetromino will spawn in the upper-left corner and move downward every 15 frames until it comes to rest on the bottom of the screen.
+
+<img src='/blog/tetris/dropping-tetromino.gif' alt="dropping tetromino" />
+
+## Piling Up Tetrominos
+Each time our tetromino reaches the ground, we want a new tetromino to appear at the top of the screen. That tetromino will drop down until it reaches the previous tetromino and come to rest on top of it.
+
+### Handling tetrominos at rest
+Once a tetromino has reached the ground, all we need to know about it is its color and location. Let's stop thinking about it as a tetromino and deal with it as a bunch of static blocks. In sketch.js, we can create an array to hold the information of these blocks, then render them to the screen in the draw() function.
+
+```javascript
+// Sketch.js:
+
+let filledTiles = []
+// ...other global vars...
+
+function setup() {
+  // ...
+}
+
+function draw() {
+  // ...
+
+  for (const tile of filledTiles) {
+    push()
+    fill(tile.color)
+    square(tile.x,tile.y,tileSize)
+    pop()
+  }
+}
+```
+
+We can add tile info to this array every time a tetromino comes to rest on the ground.
+
+```javascript
+// Tetromino.js:
+
+// ...
+
+  this.update = function() {
+    if (frameCount%speed===0) {
+      if (this.canGoDown()) {
+        this.goDown()
+        // highlight-start
+      } else {
+        // Once the tetromino hits the ground, it will
+        // no longer be considered 'active.'
+        this.active = false
+        for (const block of this.blocks) {
+          filledTiles.push(
+            {x: block.x, y: block.y, color: this.type.color}
+            )
+        }
+      }
+      // highlight-end
+    }
+  }
+```
+
+With our tetromino, now inactive, we can create a new one.
+
+```javascript 
+// Sketch.js:
+
+function draw() {
+  if (!tetromino.active) {
+    tetromino = new Tetromino()
+  }
+  // ...
+}
+```
+
+<img src="/blog/tetris/piling-up.gif" alt="piling up!" />
+
+## Handling Collisions
+As can be seen above, our tetrominos are dropping one by one, but aren't yet aware of each other. Let's add the ability for the active tetromino's blocks to check their location against our array of filled tiles, so that the tetromino will only drop if the path is clear.
+
+```javascript
+// Tetromino.js:
+
+function Block(x,y,color) {
+  // ...
+
+  this.downIsBlocked = function() {
+    let downIsBlocked = false
+    if (this.y+tileSize === height) downIsBlocked = true
+    // highlight-next-line
+    else if (this.downTileIsFilled()) downIsBlocked = true
+    return downIsBlocked
+  }
+  // Check the block's position against the objects stored
+  // in the filledTiles array.
+  // highlight-start
+  this.downTileIsFilled = function() {
+    return filledTiles.some(tile => (
+      tile.x === this.x && tile.y === this.y + tileSize
+    ))
+  }
+  // highlight-end
+}
+```
+The tiles now pile up, forming a swaying skyscraper.
+
+<img src="/blog/tetris/stacked-high.png" alt="stacked high!" />
+
+Now that we can reach the top of the screen, we might as well make it possible to lose the game.
+
+```javascript
+
+// Sketch.js:
+
+function draw() {
+  // ...
+
+  if (filledTiles.some(tile=>tile.y===0)) {
+    background('black')
+    textSize(16);
+    textAlign(CENTER, CENTER);
+    text('game over', width/2, height/2);
+    // Prevent draw() from continuing to loop:
+    noLoop()
+  }
+}
+```
+
+## Moving Left and Right
+Let's add some code to allow the player to move the active tetromino left and right with the arrow keys:
+
+```javascript
+// Sketch.js:
+
+function keyPressed() {
+  const activeTet = tetromino
+
+  if(keyCode===LEFT_ARROW) {
+    if (activeTet.canGoLeft()) activeTet.goLeft()
+  }
+  if(keyCode===RIGHT_ARROW) {
+    if (activeTet.canGoRight()) activeTet.goRight()
+  }
+  // Move down faster than once every 15 frames:
+  if(keyCode===DOWN_ARROW) {
+    if (activeTet.canGoDown()) activeTet.goDown()
+  }
+}
+```
+
+It is often helpful to write out the logic you want before actually writing the necessary functions. That said, let's now dip into Tetromino.js and give our tetromino the ability to go right and left. Just like when moving down, we will first check if the path is clear for the tetromino's four blocks, then move the tetromino if we get the go-ahead.
+
+```javascript
+// Tetromino.js:
+
+function Tetromino(type=randomType()) {
+
+  // ...
+
+  this.canGoLeft = function() {
+    let leftIsClear = true
+    for (const block of this.blocks) {
+      if (block.leftIsBlocked()) leftIsClear = false
+    }
+    return leftIsClear  
+  }
+
+  this.goLeft = function() {
+    this.origin.x = this.origin.x - tileSize
+    for (const block of this.blocks) {
+      block.goLeft()
+    }
+  }
+  
+  this.canGoRight = function() {
+    let rightIsClear = true
+    for (const block of this.blocks) {
+      if (block.rightIsBlocked()) rightIsClear = false
+    }
+    return rightIsClear  
+  }
+  this.goRight = function() {
+    this.origin.x = this.origin.x + tileSize
+    for (const block of this.blocks) {
+      block.goRight()
+    }
+  }
+
+  // ...
+}
+
+function Block(x,y,color) {
+
+  // ...
+
+  this.leftIsBlocked = function() {
+    let leftIsBlocked = false
+    if (this.x === 0) leftIsBlocked = true
+    else if (this.leftTileIsFilled()) leftIsBlocked = true
+    return leftIsBlocked
+  }
+  this.leftTileIsFilled = function() {
+    return filledTiles.some(tile => (
+      tile.x === this.x - tileSize && tile.y === this.y
+    ))
+  }
+
+  this.goLeft = function() {
+    this.x = this.x - tileSize
+  }
+
+  this.goRight = function() {
+    this.x = this.x + tileSize
+  }
+  this.rightIsBlocked = function() {
+    let rightIsBlocked = false
+    if (this.x + tileSize === width) rightIsBlocked = true
+    else if (this.rightTileIsFilled()) rightIsBlocked = true
+    return rightIsBlocked
+  }
+
+  this.rightTileIsFilled = function() {
+    return filledTiles.some(tile => (
+      tile.x === this.x + tileSize && tile.y === this.y
+    ))
+  }
+
+}
+
+```
+
+It is clear this long and repetitive series of functions violates the sacred [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) principle of programming. However, for now I have decided to leave it as it is, as I find it more readable this way. If I were to add new functionality to the game, it would probably be a good idea to refactor.
+
+## Adding Rotation
+Let's use the UP arrow key to rotate the tetromino:
+
+```javascript
+// Sketch.js
+
+function keyPressed() {
+  // ...
+    if(keyCode===UP_ARROW) {
+      if (activeTet.canRotate()) activeTet.rotate()
+    }
+  // ...
+}
+```
+Rotation is actually very simple. We already have access to an array of the four possible orientation each tetromino can have, so we will cycle through them with each keypress as long as there is nothing blocking our way.
+
+```javascript
+// Tetromino.js
+
+function Tetromino(type=randomType()) {
+
+  // ...
+
+  this.canRotate = function() {
+    // Get the next shape in the array so we can check if it will fit.
+    const nextShape = this.setBlocks(
+      type.shapes[(this.rotateStep + 1) % this.type.shapes.length]
+    )
+
+    let rotateIsClear = true
+    
+    for (const block of nextShape) {
+      // Will return true if the position the block
+      // would occupy is already filled.
+      const tileIsFilled = filledTiles.some(tile => (
+        tile.x === block.x && tile.y === block.y
+        )
+      )
+      // check left border
+      if (block.x < 0) rotateIsClear = false
+       // check right border
+      else if (block.x >= width) rotateIsClear = false
+      // check other blocks
+      else if (tileIsFilled) rotateIsClear = false
+    }
+    return rotateIsClear
+  }
+  
+  this.rotate = function() {
+    this.rotateStep++
+    const indexOfNextShape = this.rotateStep % this.type.shapes.length
+    this.blocks = this.setBlocks(type.shapes[indexOfNextShape]) 
+  }
+}
+```
+
+## Deleting Filled Rows
+We can now put our tetrominos exactly where we want! However, even our best efforts will eventually result in defeat, as we have not implemented a way to delete filled rows.
+
+<img src="/blog/tetris/neatly-arranged.png" alt="neatly arranged, but no way to delete rows" />
+
+Let's add a function to our sketch that checks if a row has been filled. If the row is full, it will be deleted and all filled tiles above it will move down one space.
+
+```javascript
+// Sketch.js:
+
+// Let's add a score that goes up each time a row is deleted.
+let score = 0
+
+const checkFilledRows = function() {
+  // Loop over each row of the screen:
+  for (let i=0;i<(height/tileSize); i++) {
+    const row = i*tileSize
+
+    const tilesInRow = filledTiles.filter(tile => tile.y===row)
+    
+    if (tilesInRow.length === width/tileSize) {
+      // Remove row from filledTiles array
+      filledTiles = filledTiles.filter(tile => !tilesInRow.includes(tile));
+      // Move down any filled tiles that were above deleted row.
+      filledTiles.forEach(tile => {
+        if(tile.y < row) tile.y = tile.y + tileSize
+      })
+      score=score+200
+    }
+  }
+}
+```
+
+## Finishing touches
+Our game of tetris is now fully operational. To make it a little more interesting, let's show the player their score, and increase the speed when they reach certain thresholds.
+
+```javascript
+// Sketch.js:
+
+let speed = 15
+// highlight-next-line
+let level = 1
+let score = 0
+
+// ...
+
+function draw() {
+  background(50);
+  fill('white')
+  text(`level ${level}`,0,10)
+  text(`score ${score}`,0,30)
+  
+  if (score>=2000) {
+    level=2
+    speed=10
+  }
+  
+  if (score>=5000) {
+    level=3
+    speed=5
+  }
+
+  // ...
+
+}
+```
+
+<img src="/blog/tetris/completed-game.gif" alt="The game is now complete and can be played." />
+
+### Next steps
+It might be nice to add some animations to the blocks when a row is deleted. A big explosion, something like that. Sound effects?
+
+This project might also be a good place to experiment with [design patterns](https://en.wikipedia.org/wiki/Design_Patterns).
+
+
+

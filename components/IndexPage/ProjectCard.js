@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { cardHead, cardShape, sectionText } from '../styles/partials'
+import { cardHead, cardShape, sectionText } from 'styles/partials'
 
 export default function ProjectCard({ project }) {
 

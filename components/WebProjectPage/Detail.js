@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { summary } from '../styles/partials'
+
+import { summary } from 'styles/partials'
 
 const styles = css`
   summary {

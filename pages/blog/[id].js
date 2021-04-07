@@ -5,9 +5,9 @@ import matter from 'gray-matter'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { under768 } from '../../styles/mediaQueries'
+import { under768 } from 'styles/mediaQueries'
 
-import { getIdsFromDirectory, getFileContents } from '../../utils/fs'
+import { getIdsFromDirectory, getFileContents } from 'utils/fs'
 import { 
   articleHead, 
   articleSubHead, 
@@ -15,17 +15,17 @@ import {
   articleText, 
   refinedLink, 
   sectionLabel 
-} from '../../styles/partials'
+} from 'styles/partials'
 
-import Layout from '../../components/Layout'
-import TOC from '../../components/TOC'
-import CustomH2 from '../../components/CustomH2'
-import CodeBlock from '../../components/CodeBlock'
+import Layout from '@/components/Layout'
+import TOC from '@/components/BlogPage/TOC'
+import CustomH2 from '@/components/BlogPage/CustomH2'
+import CodeBlock from '@/components/CodeBlock'
 
 const components = { 
   h2: CustomH2, 
   pre: props => <div {...props} />,
-  code: CodeBlock 
+  code: CodeBlock,
 }
 
 export default function BlogPost ({ source, frontMatter, headings }) {
@@ -36,7 +36,6 @@ export default function BlogPost ({ source, frontMatter, headings }) {
       <TOC headings={headings} />
       <main css={styles}>
         <header>
-
           <div className="dateAndWordCount">
             <time>{frontMatter.date}</time>
             <div className="wordCount">{frontMatter.wordCount} words</div>
@@ -59,6 +58,7 @@ const styles = css`
   /* flex: 2 0 600px; */
   margin: 50px;
   margin-left: 350px;
+  padding-bottom: 350px;
 
   .dateAndWordCount {
     display: flex;
@@ -121,8 +121,18 @@ const styles = css`
       width: 100%;
     }
   }
+  ul, li {
+    ${articleText}
+    ${under768} {
+      width: 100%;
+    }
+  }
   a {
     ${refinedLink}
+  }
+
+  img {
+    margin-top: 1rem;
   }
 
   ${under768} {
