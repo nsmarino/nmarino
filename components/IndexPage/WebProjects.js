@@ -5,11 +5,13 @@ import { under768 } from 'styles/mediaQueries'
 import {jsx, css} from '@emotion/react'
 import { sectionLabel, topLine } from 'styles/partials'
 
+import sort from 'utils/sort'
+
 export default function WebProjects({ projects }) {
   return (
     <section css={styles}>
       <h2>Web Projects</h2>
-      {projects.map(project=><ProjectCard project={project} key={project.slug} />)}
+      {projects.sort(sort).map(project=><ProjectCard project={project} key={project.slug} />)}
     </section>
   )
 }

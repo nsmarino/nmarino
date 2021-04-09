@@ -5,7 +5,7 @@ import slugify from 'utils/slugify'
 
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
-import { sectionLabel, topLine, techieLink } from 'styles/partials'
+import { sectionLabel, topLine, } from 'styles/partials'
 
 import { under768 } from 'styles/mediaQueries'
 

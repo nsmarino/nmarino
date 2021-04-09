@@ -11,7 +11,7 @@ import {
   articleHead, 
   topLine, 
   articleText, 
-  techieLink 
+  refinedLink
 } from 'styles/partials'
 
 import { getIdsFromDirectory, getFileContents } from 'utils/fs'
@@ -22,7 +22,13 @@ import Images from '@/components/WebProjectPage/ProjectImages'
 
 import { under768 } from 'styles/mediaQueries'
 
-const components = { Detail, }
+import CodeBlock from '@/components/CodeBlock'
+
+const components = { 
+  Detail,
+  pre: props => <div {...props} />,
+  code: CodeBlock,
+}
 
 export default function BlogPost ({ source, frontMatter }) {
   const content = hydrate(source, { components })
@@ -75,7 +81,7 @@ const styles = css`
   }
 
   a {
-    ${techieLink}
+    ${refinedLink}
   }
 
 `

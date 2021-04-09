@@ -2,6 +2,7 @@
 slug: 'event-calendar'
 title: 'Reed Library Event Calendar'
 desc: 'serverless Next.js with MongoDB and JWT'
+order: 2
 images: [
   {
     src: '/webprojects/reed-events/reed1.png',
@@ -39,7 +40,78 @@ images: [
 Event calendar created while I was working at Reed Library in Carmel, NY. Admins can create and modify events, and are able to schedule daily, weekly, or monthly recurrence. Patrons of the library can register for events and receive email confirmation after registering. Visit the site at reedevents.vercel.app, or explore the source code on github.
 
 <Detail sum="MongoDB with Serverless Next.JS">
-CONTENT HERE
+
+I used Next.JS to create a 'serverless' architecture; requests to a MongoDB database are handled in the [Pages API](https://nextjs.org/docs/api-routes/introduction) directory.
+
+Due to this serverless setup, connecting to the database works differently than it would with a dedicated NodeJS server. If not instructed otherwise, NextJS will attempt to form a new database connection every time a request is sent. I use a utility dbConnect() function to ensure that only one connection to the database is made.
+
+```javascript
+// ./utils/dbConnect.js :
+
+import mongoose from 'mongoose'
+import { MONGODB_URI } from '../utils/config'
+
+// creating connection object
+const connection = {}
+
+async function dbConnect() {
+  // check if we have connection to our database 
+  if (connection.isConnected) {
+    return
+  }
+  // connecting to our database
+  const db = await mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
+  
+  connection.isConnected = db.connections[0].readyState
+}
+
+export default dbConnect
+```
+
+If a connection exists, a new one will not be made. This function is then used in each request. Here's an example request handler that returns any saved events for a specific month; note how it calls the dbConnect() function before interacting with the database.
+
+```javascript
+// ./pages/api/events/byMonth.js
+
+import dbConnect from '../../../utils/dbConnect'
+import Event from '../../../models/Event'
+
+// A post request with a month and year will return only the events for that month.
+export default async function eventsHandler(req, res) {
+  const { method } = req
+
+  // Check database connection
+  await dbConnect()
+  
+  switch (method) {
+    case 'GET':
+      res.status(400).json({ success: false })
+      break
+    case 'POST':
+      try {
+        const month = req.body.number
+        const year = req.body.year
+        const eventsByMonth = await Event.find(
+            { 'dates.month': month, 'dates.year': year })
+        res.status(200).json({ 
+          success: true, 
+          data: eventsByMonth 
+        })
+    } catch (error) {
+        res.status(400).json({ success: false })
+      }
+      break
+    default:
+      res.status(400).json({ success: false })
+      break
+  }
+}
+```
+
 </Detail>
 
 <Detail sum="UX Best Practices for Form Design">
@@ -47,9 +119,131 @@ CONTENT HERE
 </Detail>
 
 <Detail sum="JSON Web Token for Admin Login">
-CONTENT HERE
+Only library staff are allowed to create, edit or delete event information; library patrons are only able to view events and sign up for events that require registration.
+
+First, an administrator username and password is stored in the MongoDB database. It is very important that the password is not stored 'as is' in the database. I use [bcrypt](https://auth0.com/blog/hashing-in-action-understanding-bcrypt/) to hash and [salt](https://nordpass.com/blog/password-salt/) the passwords before saving them.
+
+When a user attempts to [log in](https://reedevents.vercel.app/login), bcrypt will compare the submitted password to the hashed and salted password in the database.
+
+```javascript
+import dbConnect from '../../utils/dbConnect'
+import errorHandler from '../../utils/errorHandler'
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+import Admin from '../../models/Admin'
+
+export default async function loginHandler(req, res) {
+  const { method } = req
+  await dbConnect()
+  switch (method) {
+    case 'POST':
+      try {
+        const body = req.body
+
+        const admin = await Admin.findOne({ username: body.username })
+        const passwordCorrect = admin === null
+          ? false
+          : await bcrypt.compare(body.password, admin.passwordHash)
+      
+        if (!(admin && passwordCorrect)) {
+          return res.status(401).json({
+            error: 'invalid username or password'
+          })
+        }
+      
+        const adminForToken = {
+          username: admin.username,
+          id: admin._id,
+        }
+      
+        const token = jwt.sign(adminForToken, process.env.SECRET)
+        res
+          .status(200)
+          .send({ token, username: admin.username })
+      } catch (error) {
+        errorHandler(error, req, res)
+      }
+      break
+    default:
+      res.status(400).json({ success: false })
+      break
+  }
+}
+```
+
+If the login is successful, the client will receive a [JSON Web Token](https://jwt.io/introduction) which the client stores in cookies using js-cookie and which can be accessed via React's Context feature. The entire app is wrapped in an AdminProvider, and any part of the app can access this admin token with the useAdmin() function.
+
+```javascript
+import React, { useState } from 'react'
+import Cookies from 'js-cookie'
+
+const AdminContext = React.createContext()
+
+function AdminProvider({children}) { 
+  const [admin, setAdmin] = useState(Cookies.get('token') || null)
+    
+  return (
+    <AdminContext.Provider value={{admin, setAdmin}}> 
+      {children}
+    </AdminContext.Provider>
+  )
+}
+
+function useAdmin() {
+  const context = React.useContext(AdminContext)
+  if (context === undefined) {
+    throw new Error('Admin can only be accessed within an AdminProvider')
+  }
+  return context
+}
+
+export { AdminProvider, useAdmin }
+```
+What this means in practice is that the homepage of the app will only show the "New Event" if an admin is logged in; likewise, the dashboard for editing events is only accessible to someone with admin permissions.
+
+When the admin creates, edits, or deletes an event, the JSON web token is sent along with the request to verify that the admin is authorized to make such changes.
 </Detail>
 
 <Detail sum="Confirmation emails with Sendgrid">
-CONTENT HERE
+
+It's important for users to receive feedback on their actions. For example, a patron signing up for a 'Knitting Club' meeting needs to be sure that they successfully registered. I used the [Sendgrid](https://sendgrid.com/) library to automatically send confirmation emails to patrons after they sign up for an event.
+
+To do so, I wrote a sendEmail() function, following Sendgrid's docs.
+
+```javascript
+
+// ./utils/sendEmail.js :
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const sendEmail = async (event, email) => {
+    const msg = {
+      to: email,
+      from: 'contact@nmarino.dev',
+      subject: 'Registration Confirmation',
+      text: 
+      `You have successfully registered for ${event.formData.title}. 
+      Please call the library with any further questions. 
+      Visit event page`,
+      html: 
+      `You have successfully registered for ${event.formData.title}. 
+      Please call the library with any further questions. 
+      <a href='reedevents.vercel.app/events/${event.id}'>Visit event page</a>`,
+    };
+
+    try {
+      await sgMail.send(msg);
+    } catch (error) {
+      console.error(error);
+      if (error.response) {
+        console.error(error.response.body)
+      }
+    }   
+}
+
+export default sendEmail
+
+```
+This function is called by the Pages API when a patron has successfully registered.
+
 </Detail>

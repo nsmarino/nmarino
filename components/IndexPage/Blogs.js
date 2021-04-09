@@ -5,12 +5,13 @@ import { under768 } from 'styles/mediaQueries'
 /** @jsxImportSource @emotion/react */
 import {jsx, css} from '@emotion/react'
 import { sectionLabel, topLine } from 'styles/partials'
+import sort from 'utils/sort'
 
 export default function Blogs({ blogs }) {
   return (
     <section css={styles}>
       <h2>Blog</h2>
-      {blogs.map(blog=><BlogCard blog={blog} key={blog.slug} />)}
+      {blogs.sort(sort).map(blog=><BlogCard blog={blog} key={blog.slug} />)}
     </section>
   )
 }

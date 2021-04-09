@@ -4,7 +4,7 @@ import {jsx, css} from '@emotion/react'
 import { under768 } from 'styles/mediaQueries'
 
 import Image from 'next/image'
-import { sectionHead, sectionLabel, sectionText, techieLink, topLine } from 'styles/partials'
+import { sectionHead, sectionLabel, sectionText, refinedLink, topLine } from 'styles/partials'
 import Toggle from './Toggle'
 
 export default function Info() {
@@ -22,7 +22,7 @@ export default function Info() {
       </div>
         <h1>Nicholas Marino</h1>
         
-          <p>Welcome to my page! I am a web developer based in Brooklyn, NY. I work with React, Node, and NextJS to create websites and apps that are reliable and engaging. In my free time I experiment with game design and generative art. Email me at <a href="mailto: contact@nmarino.dev">contact@nmarino.dev</a> if you'd like to work together, or find me on <a href="https://twitter.com/yard__">twitter</a> or <a href="https://github.com/nsmarino">github</a>.</p>
+          <p>Welcome to my page! I am a web developer based in Brooklyn, NY. I work with React, Node, and TypeScript to create websites and apps that are reliable and engaging. In my free time I experiment with game design and generative art. Email me at <a href="mailto: contact@nmarino.dev">contact@nmarino.dev</a> if you'd like to work together, or find me on <a href="https://twitter.com/yard__">twitter</a> or <a href="https://github.com/nsmarino">github</a>.</p>
          
           <div className="transitionControl">
             <p style={{marginBottom: '0'}}>Page Transitions</p>
@@ -61,7 +61,7 @@ p {
   padding-top:20px;
 }
 a {
-  ${techieLink}
+  ${refinedLink}
 }
 
 ${under768} { 
