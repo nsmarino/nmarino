@@ -191,7 +191,6 @@ The following lines can be added to sketch.js:
 
 const tileCount = 10
 let tileSize
-// highlight-next-line
 let speed = 15
 
 let tetromino
@@ -206,7 +205,6 @@ function draw() {
   background(50);
 
   tetromino.display()
-  // highlight-next-line
   tetromino.update()
 }
 ```
@@ -254,7 +252,6 @@ We can add tile info to this array every time a tetromino comes to rest on the g
     if (frameCount%speed===0) {
       if (this.canGoDown()) {
         this.goDown()
-        // highlight-start
       } else {
         // Once the tetromino hits the ground, it will
         // no longer be considered 'active.'
@@ -265,7 +262,6 @@ We can add tile info to this array every time a tetromino comes to rest on the g
             )
         }
       }
-      // highlight-end
     }
   }
 ```
@@ -297,19 +293,16 @@ function Block(x,y,color) {
   this.downIsBlocked = function() {
     let downIsBlocked = false
     if (this.y+tileSize === height) downIsBlocked = true
-    // highlight-next-line
     else if (this.downTileIsFilled()) downIsBlocked = true
     return downIsBlocked
   }
   // Check the block's position against the objects stored
   // in the filledTiles array.
-  // highlight-start
   this.downTileIsFilled = function() {
     return filledTiles.some(tile => (
       tile.x === this.x && tile.y === this.y + tileSize
     ))
   }
-  // highlight-end
 }
 ```
 The tiles now pile up, forming a swaying skyscraper.
@@ -537,7 +530,6 @@ Our game of tetris is now fully operational. To make it a little more interestin
 // Sketch.js:
 
 let speed = 15
-// highlight-next-line
 let level = 1
 let score = 0
 

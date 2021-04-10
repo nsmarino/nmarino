@@ -295,20 +295,15 @@ I then updated the ChapterOne component so clicking the lever triggers the pullL
 import useTimelines from '../hooks/useTimelines'
 import { useState } from 'react'
 import { chapterOneView} from '../constants'
-// highlight-next-line
 import { pullLever, turnGear, showChapter } from '../animations'
 
 const chapterAnimations = [showChapter]
-// highlight-start
 const gearAnimations = [turnGear]
 const leverAnimations = [pullLever]
-// highlight-end
 
 const ChapterOne = ({enter, leave}) => {
-  // highlight-next-line
   const [gearsTurning, setGearsTurning] = useState(false)
  
-  // highlight-start
   const [chapterRef, { showChapter }] = useTimelines(chapterAnimations)
   const [bigGearRef, bigGearTimelines] = useTimelines(gearAnimations)
   const [smallGearRef, smallGearTimelines] = useTimelines(gearAnimations)
@@ -328,7 +323,6 @@ const ChapterOne = ({enter, leave}) => {
         setGearsTurning(!gearsTurning)
       });
   }
-  // highlight-end
 
   return (<>
   <text onClick={() => enter(chapterOneView, showChapter)}>CHAPTER ONE</text>
@@ -337,17 +331,13 @@ const ChapterOne = ({enter, leave}) => {
     // Non-interactive parts of scene omitted
 
     <g id="machine">
-    // highlight-start
       <g id="bigGear" ref={bigGearRef}>...</g>
       <g id="smallGear" ref={smallGearRef}>...</g>
-    // highlight-end
     </g>
 
 <g id="Lever"
-  // highlight-start
   class="click" ref={leverRef} 
   onClick={handleLeverClick}>
-  // highlight-end
   ...</g>
 
 <text onClick={() => leave(showChapter)}>-back</text>
