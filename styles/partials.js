@@ -96,4 +96,7 @@ export const techieLink = css`
 
 export const refinedLink = css`
   color: blue;
+  :hover {
+    text-decoration: underline;
+  }
 `

@@ -36,11 +36,11 @@ export default function BlogPost ({ source, frontMatter, headings }) {
       <TOC headings={headings} />
       <main css={styles}>
         <header>
+          <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
           <div className="dateAndWordCount">
             <time>{frontMatter.date}</time>
             <div className="wordCount">{frontMatter.wordCount} words</div>
           </div>
-          <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
           <h1>{frontMatter.title}</h1>
           <p className="desc">{frontMatter.desc}</p>
 
@@ -77,7 +77,7 @@ const styles = css`
       ${sectionLabel}
     color: blue;
     display: block;
-    margin-top: 50px;
+    margin-bottom: 50px;
 
     :hover {
         text-decoration: underline;
@@ -156,7 +156,7 @@ export async function getStaticProps({ params }) {
   .split('\n')
   .filter(line=> line.match(/^##\s/))
   .map(line=> line.replace(/^##\s/, ''))
-  // Previously: /^###*\s/
+
   const { content, data } = matter(source)
   const mdxSource = await renderToString(content, { components, scope: data })
   return { props: { source: mdxSource, frontMatter: data, headings } }

@@ -115,7 +115,29 @@ export default async function eventsHandler(req, res) {
 </Detail>
 
 <Detail sum="UX Best Practices for Form Design">
-CONTENT HERE
+
+I designed the app because the event-management software that the library was using at the time of my employment there was very counter-intuitive and staff members found it exceedingly hard to schedule even very simple one-off events. I sought to make the event-creation form as easy to use as possible. My design decisions were informed by the excellent blog posts of [Erik Kennedy](https://learnui.design/blog/4-rules-intuitive-ux.html).
+
+The library often hosts events that repeat daily, weekly, or monthly. When I began working on this site, the pandemic had just started and Zoom was all the rage. I carefully examined the way Zoom had designed event scheduling and attempted to re-create it in a way that any staff member could easily master.
+
+The settings for an event that repeat daily are simple; you need to state the interval between each event, and say whether it will end by a specific day, or after a set amount of occurrences.
+
+<img src="/webprojects/reed-events/dailyRecur3days.png" alt="An event that occurs on a daily basis" />
+
+Immediate visual feedback is provided in the form of a calendar that updates when settings are tweaked. In this way, staff members can immediately see what dates the scheduled events will fall on.
+
+<img src="/webprojects/reed-events/dailyRecur2.png" alt="An event that occurs on a daily basis" />
+
+The same design philosophy is applied to events that recur on a weekly basis. I avoid dropdown boxes when possible; often CSS-enhanced radio buttons and checkboxes provide a better experience for the user, especially on mobile.
+
+<img src="/webprojects/reed-events/weeklyRecur.png" alt="An event that occurs on a daily basis" />
+
+These two strategies — providing immediate visual feedback and avoiding dropdown menus — allow even complicated event recurrence patterns to be scheduled with ease. In the example shown here, a board meeting is scheduled to occur, without fail, on the fourth Wednesday of each month.
+
+<img src="/webprojects/reed-events/monthlyRecur.png" alt="An event that occurs on a daily basis" />
+
+
+
 </Detail>
 
 <Detail sum="JSON Web Token for Admin Login">
