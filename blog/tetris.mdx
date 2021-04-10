@@ -6,7 +6,6 @@ date: '4 Feb 2021'
 wordCount: '983'
 order: 2
 ---
-
 I used [p5js](https://p5js.org/) to create a simple Tetris clone and practice the basic concepts of [object oriented programming](https://www.freecodecamp.org/news/object-oriented-programming-concepts-21bb035f7260/). I first became aware of p5js from the Coding Train videos produced by [Dan Shiffman](https://shiffman.net/), who also wrote the excellent book [The Nature of Code](https://natureofcode.com/), which I would recommend to anyone interested in simulating natural systems or making art with code.
 
 The completed game can be found [here](https://editor.p5js.org/nsmarino/sketches/6KxrcCVIp).
@@ -16,7 +15,7 @@ The p5js library is basically a set of utilities wrapped around the HTML5 Canvas
 
 After staring at a jpeg of a tetris game for a while, I figured I should start by setting up a grid for the pieces (which i will refer to as 'tetrominos' for this rest of this post) to move around on.
 
-```javascript
+```javascript {1,2}
 // Sketch.js:
 const tileCount = 10
 let tileSize

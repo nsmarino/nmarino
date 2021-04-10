@@ -25,3 +25,13 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.highlight-line {
+  background-color: hsl(70,8%,30%);
+  display: block;
+  margin-right: -1em;
+  margin-left: -1.2em;
+  padding-right: 1em;
+  padding-left: 0.75em;
+  border-left: 0.3em solid gold;
+}
