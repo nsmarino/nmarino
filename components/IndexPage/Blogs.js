@@ -27,10 +27,6 @@ const styles = css`
   }
   
   ${under768} { 
-    margin-top: 0px;
-    h2 {
-      font-size: 200%;
-      font-family: Computer-Modern;
-    }
+    margin: 25px;
   }
 `

@@ -5,7 +5,6 @@ import { under768 } from 'styles/mediaQueries'
 
 import Image from 'next/image'
 import { sectionHead, sectionLabel, sectionText, refinedLink, topLine } from 'styles/partials'
-import Toggle from './Toggle'
 
 export default function Info() {
   return (
@@ -23,14 +22,6 @@ export default function Info() {
         <h1>Nicholas Marino</h1>
         
           <p>Welcome to my page! I am a web developer based in Brooklyn, NY. I work with React, Node, and TypeScript to create websites and apps that are reliable and engaging. In my free time I experiment with game design and generative art. Email me at <a href="mailto: contact@nmarino.dev">contact@nmarino.dev</a> if you'd like to work together, or find me on <a href="https://twitter.com/yard__">twitter</a> or <a href="https://github.com/nsmarino">github</a>.</p>
-         
-          <div className="transitionControl">
-            <p style={{marginBottom: '0'}}>Page Transitions</p>
-            <Toggle />
-          </div>
-
-
-      
     </section>
   )
 }
@@ -65,11 +56,11 @@ a {
 }
 
 ${under768} { 
-  margin-top: 25px; 
+  margin: 25px; 
   margin-bottom: 0px;
-  h2 {
+  /* h2 {
     display: none;
-  }
+  } */
   .selfie {
     width:  33%;
     font-size:0;
