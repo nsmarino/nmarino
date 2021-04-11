@@ -28,5 +28,6 @@ const styles = css`
 
   ${under768} { 
     margin: 25px;
+    margin-bottom:0;
   }
 `
