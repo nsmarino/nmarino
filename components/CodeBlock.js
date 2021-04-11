@@ -51,7 +51,7 @@ const CodeBlock = ({children, metastring}) => {
 const styles = css`
  width: 70%;
  padding: 1rem;
- max-height: 100vh;
+ max-height: 90vh;
  overflow: auto;
  ${under768} {
    width:100%;
