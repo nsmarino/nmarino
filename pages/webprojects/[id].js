@@ -30,12 +30,12 @@ const components = {
   code: CodeBlock,
 }
 
-export default function BlogPost ({ source, frontMatter }) {
+export default function WebProject ({ source, frontMatter }) {
   const content = hydrate(source, { components })
 
   return (
     <Layout title={frontMatter.title}>
-      <div css={containterStyles}>
+      <div css={containerStyles}>
       <main css={styles}>
       <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
       <h1>{frontMatter.title}</h1>
@@ -49,7 +49,7 @@ export default function BlogPost ({ source, frontMatter }) {
   )
 }
 
-const containterStyles = css`
+const containerStyles = css`
   display: flex;
 
   ${under768} {
@@ -76,12 +76,36 @@ const styles = css`
   h1 {
     ${articleHead}
   }
+  h3 {
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    font-weight: normal;
+    font-family: Computer-Modern;
+    color: grey;
+    font-size: 90%;
+    margin-top: 3rem;
+  }
+
   p {
     ${articleText}
+    ${under768} {
+      width: 100%;
+    }
+  }
+  ul, li {
+    ${articleText}
+    ${under768} {
+      width: 100%;
+    }
   }
 
   a {
     ${refinedLink}
+  }
+
+  img {
+    margin-top: 1rem;
+    max-width: 100%;
   }
 
 `

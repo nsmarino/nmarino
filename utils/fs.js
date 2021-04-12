@@ -29,11 +29,11 @@ export function getIdsFromDirectory(dir) {
     })
   }
 
-  export async function getFileContents(dir, id) {
-    const fullPath = path.join(dir, `${id}.mdx`)
-    const fileContents = fs.readFileSync(fullPath, 'utf8')
-    
-    // Combine the data with the id and contentHtml
-    return fileContents
-  }
+export async function getFileContents(dir, id) {
+  const fullPath = path.join(dir, `${id}.mdx`)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  
+  // Combine the data with the id and contentHtml
+  return fileContents
+}
 

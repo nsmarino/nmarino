@@ -45,9 +45,9 @@ export default function BlogPost ({ source, frontMatter, headings }) {
           <p className="desc">{frontMatter.desc}</p>
 
         </header>
-<div>
-{content}
-</div>
+        <div>
+        {content}
+        </div>
 
       </main>
     </Layout>

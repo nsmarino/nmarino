@@ -28,9 +28,127 @@ images: [
 I created this portfolio site to showcase recent fullstack projects, to keep track of my ideas through regular blogging, and to give myself a home on the World Wide Web. The design is fairly simple but there were a few interesting problems I had to wrestle with.
 
 <Detail sum="Generating pages from MDX">
-CONTENT HERE
+
+It was important to me to achieve full separation of concerns when crafting this site. I knew I would spend most of my time writing text content, so I determined the best workflow would be to write all posts as MDX files, then set up templating and static page generation behind the scenes. This way I could:
+
+  - have 2 different templates, one for blog posts and one for web project overviews
+  - easily write content as text files, without worrying about translating them into webpages
+  - be able to enhance pages with React components on an 'as-needed' basis.
+
+### Using next-mdx-remote
+
+Following this principle of separation of concerns, I keep all of my blog posts in a directory at the project root called 'blog,' and store web project overviews in a directory at the project root called 'webprojects.' In this way, the content is decoupled from the sitebuild; I could easily refactor to store the posts elsewhere. If I were building a similar site for someone else, I would perhaps source the content from a CMS. 
+
+Whether stored locally or in a database or CMS, the next step is to create a [dynamic route](https://nextjs.org/docs/routing/dynamic-routes) that will turn each MDX file into a static web page.
+
+To create web project overview pages such as this one, I made a directory at the project root called 'webprojects,' with a single file [id].js inside of it. This bracket syntax indicates to NextJS that we will be creating a dynamic route using two of the tools that NextJS provides for data fetching: the `getStaticPaths` function, which will create a static webpage for each path it receives, and the `getStaticProps` function, which will then populate those static webpages with content. The [next-mdx=remote](https://github.com/hashicorp/next-mdx-remote) library is used to load MDX files.
+
+Here is a simplified version of `./webprojects/[id].js` with presentational code and other irrelevant details removed:
+
+```javascript
+// ./webprojects/[id].js:
+import renderToString from 'next-mdx-remote/render-to-string'
+import hydrate from 'next-mdx-remote/hydrate'
+import matter from 'gray-matter'
+
+import { getIdsFromDirectory, getFileContents } from 'utils/fs'
+
+import Layout from '@/components/Layout'
+import Detail from '@/components/WebProjectPage/Detail'
+import Images from '@/components/WebProjectPage/ProjectImages'
+import CodeBlock from '@/components/CodeBlock'
+
+const components = { 
+  Detail,
+  pre: props => <div {...props} />,
+  code: CodeBlock,
+}
+
+export default function WebProject ({ source, frontMatter }) {
+  const content = hydrate(source, { components })
+
+  return (
+    <Layout title={frontMatter.title}>
+      <main css={styles}>
+      <h1>{frontMatter.title}</h1>
+      {content}
+      </main>
+      <Images images={frontMatter.images} />
+    </Layout>
+  )
+}
+
+export async function getStaticPaths() {
+  const paths = getIdsFromDirectory('webprojects')
+
+  return {
+    paths,
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }) {
+  const source = await getFileContents('webprojects', params.id)
+
+  const { content, data } = matter(source)
+
+  const mdxSource = await renderToString(content, { components, scope: data })
+
+  return { 
+    props: 
+    { 
+      source: mdxSource, 
+      frontMatter: data 
+    } 
+  }
+}
+```
+
+First, each file from the 'webprojects' directory is converted to a path in the `getStaticPaths` function, using a utility function:
+
+```javascript
+// ./utils/fs.js:
+export function getIdsFromDirectory(dir) {
+
+  const directory = path.join(process.cwd(), dir)
+
+  const fileNames = fs.readdirSync(directory)
+    return fileNames.map(fileName => {
+      return {
+        params: {
+          id: fileName.replace(/\.mdx$/, '')
+        }
+      }
+    })
+  }
+```
+Each path returned from this function has an id parameter which can be accessed within `getStaticProps`. First the id is used to get the contents of the mdx file:
+
+```javascript
+export async function getFileContents(dir, id) {
+  const fullPath = path.join(dir, `${id}.mdx`)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  
+  // Combine the data with the id and contentHtml
+  return fileContents
+}
+```
+[gray-matter](https://github.com/jonschlinkert/gray-matter) is used to pull out the metadata from the file. It is then prepared for rendering using the `renderToString` function from `next-mdx-remote`. It is important to import any components with the MDX file will be using, and provide them as an argument to next-mdx-remote's `renderToString` and `hydrate` functions so that they can be used in the completed web page. `renderToString` prepares the file on the server side, while `hydrate` is used in the client to initially render static content, then update any dynamic content once the browser has completed all higher-priority tasks.
+
+I found this a very convenient way to work, and was able to quickly create a similar template for longer-form blog posts.
+
+
+
+
+
+
+
+
+
 </Detail>
 
-<Detail sum="Self-Updating Table of Contents for MDX blog posts">
-CONTENT HERE
+<Detail sum="Self-Updating Table of Contents for MDX blog posts in NextJS">
+
+I wanted to write long, detailed blog posts about different projects I am working on. For the convenience of the reader, I set up a self-updating table of contents that pulls all H2-level headers from the blog posts, written in MDX. I discussed this process in a [blog post](/blog/toc-for-mdx-blog).
+
 </Detail>
