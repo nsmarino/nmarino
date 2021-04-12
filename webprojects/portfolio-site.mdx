@@ -133,22 +133,15 @@ export async function getFileContents(dir, id) {
   return fileContents
 }
 ```
+
 [gray-matter](https://github.com/jonschlinkert/gray-matter) is used to pull out the metadata from the file. It is then prepared for rendering using the `renderToString` function from `next-mdx-remote`. It is important to import any components with the MDX file will be using, and provide them as an argument to next-mdx-remote's `renderToString` and `hydrate` functions so that they can be used in the completed web page. `renderToString` prepares the file on the server side, while `hydrate` is used in the client to initially render static content, then update any dynamic content once the browser has completed all higher-priority tasks.
 
 I found this a very convenient way to work, and was able to quickly create a similar template for longer-form blog posts.
-
-
-
-
-
-
-
-
 
 </Detail>
 
 <Detail sum="Self-Updating Table of Contents for MDX blog posts in NextJS">
 
-I wanted to write long, detailed blog posts about different projects I am working on. For the convenience of the reader, I set up a self-updating table of contents that pulls all H2-level headers from the blog posts, written in MDX. I discussed this process in a [blog post](/blog/toc-for-mdx-blog).
+I wanted to write long, detailed blog posts about different projects I am working on. For the convenience of the reader, I set up a self-updating table of contents that pulls all H2-level headers from the blog posts, which are written in MDX. I discussed this process in a [blog post](/blog/toc-for-mdx-blog).
 
 </Detail>

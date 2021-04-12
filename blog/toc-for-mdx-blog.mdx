@@ -1,10 +1,378 @@
 ---
 slug: toc-for-mdx-blog
 title: Creating a Table of Contents for Blog Posts Written in MDX
-desc: I would describe this as "sort of easy in Gatsby and sort of hard in NextJS"
+desc: How to implement in NextJS
 date: 22 Mar 2021
 wordCount: 411
 order: 3
 ---
 
-Hello again...
+The desktop version of this site features a table of contents to the left of blog posts that highlights the current section of the post as the reader scrolls through. Clicking on one of the section titles in the table of contents will bring you to the corresponding section. This is a friendly and useful feature for blog posts that are often long, technical, and directed to an audience that might prefer to skip ahead to the concept or fragment of code that they are interested.
+
+Although pulling section headers from markdown and generating a table of contents is quite easy in [Gatsby](https://www.gatsbyjs.com/plugins/gatsby-remark-table-of-contents/), using its GraphQL based query system, I could not easily find a similar solution for blogs created with NextJS, so I decided to create my own. This blog post walks through the creation of a simplified TOC component and explains how to set up an MDX blog in NextJS, grab section headers from it, and update the styles of the headers in the table of contents based on the reader's scroll position.
+
+I based a good deal of this code on this [excellent blog post](https://nickymeuleman.netlify.app/blog/table-of-contents) by Nicky Meuleman, which describes how to create a table of contents that updates on scroll using MDX and Gatsby. I would recommend reading that post regardless of what frontend framework you are using; I am simply recording here how I adapted its instructions for a NextJS context.
+
+## Setting Up An MDX Blog With NextJS
+
+Create a NextJS app and download `next-mdx-remote` (for creating static pages from MDX files) and `gray-matter` (for reading metadata from MDX files).
+
+`yarn create next-app mdx-blog-with-toc`
+
+`cd mdx-blog-with-toc`
+
+`yarn add next-mdx-remote gray-matter`
+
+`yarn dev`
+
+The first order of business is to create the MDX file that we will use as a datasource for our blog post. At the project root, create a directory called `blogSource` with the file `sample-post.mdx` inside of it. You can copy the contents of the file from my [example repo](https://github.com/nsmarino/toc-mdx-example/blob/main/blogSource/sample-post.mdx)
+
+Next, set up the [dynamic route](https://nextjs.org/docs/routing/dynamic-routes) that will transform the MDX into a templated blog post. In the pages directory, create a `blog` directory with the file `[id].js` inside of it.
+
+This dynamic route will use two [built-in NextJS functions](https://nextjs.org/docs/basic-features/data-fetching) to source and transform MDX data into static blog pages. `getStaticPaths` will create a page based on the MDX file we provide, then `getStaticProps` will populate that page with data at build time. The setup for this process looks like this:
+
+```javascript
+// pages/blog/[id].js
+export default function BlogPost () {
+  return (
+    <div>
+
+    </div>
+  )
+}
+
+export async function getStaticPaths() {
+
+}
+
+export async function getStaticProps({ params }) {
+
+}
+```
+
+Of course, this does nothing right now, because we have not told NextJS where to source its data from or how to transform it.
+
+## Transforming An MDX File Into A Static Blog Page
+
+Create a directory at the project route called `utils` and add a file called `fs.js`. Here we will write a few functions that help us source data from the app's filesystem in `getStaticPaths` and transform that data in `getStaticProps`.
+
+```javascript
+// utils/fs.js
+import fs from 'fs'
+import path from 'path'
+
+// Provide name of directory to source data from
+export function getIdsFromDirectory(dir) {
+  const directory = path.join(process.cwd(), dir)
+
+  const fileNames = fs.readdirSync(directory)
+    return fileNames.map(fileName => {
+      return {
+        params: {
+          // Remove extension from filename to create an id
+          id: fileName.replace(/\.mdx$/, '')
+        }
+      }
+    })
+  }
+
+// Will take id returned from getStaticPaths as second argument
+export async function getFileContents(dir, id) {
+  const fullPath = path.join(dir, `${id}.mdx`)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+
+  return fileContents
+}
+```
+
+Update `pages/blog/[id].js` to use these functions and interact with the filesystem.
+
+```javascript {1,2,13-17,21-28}
+import matter from 'gray-matter'
+import { getIdsFromDirectory, getFileContents } from '../../utils/fs'
+
+export default function BlogPost () {
+  return (
+    <div>
+
+    </div>
+  )
+}
+
+export async function getStaticPaths() {
+  const paths = getIdsFromDirectory('blogSource')
+  return {
+    paths,
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }) {
+  const source = await getFileContents('blogSource', params.id)
+
+  // Separate source into metadata and content using gray-matter
+  const { content, data } = matter(source)
+
+  /* For now just console.log the content and data 
+     to ensure you have successfully fetched it */
+  console.log(content, data)
+}
+```
+In order to actually render the MDX content, we can use the `next-mdx-remote` package. This package was a little strange to me at first, but it's basically a two-step process. First, you use the `renderToString` function on the server side (ie in `getStaticProps`) to render the MDX content at build time. In the React component, the `hydrate` function is used to update any dynamic content the MDX file is using. Ypu provide both functions with the content you want to transform, as well as the React components that the MDX file would like to use. 
+
+```javascript {2,3,7,9,10,14,15,32-39}
+import matter from 'gray-matter'
+import renderToString from 'next-mdx-remote/render-to-string'
+import hydrate from 'next-mdx-remote/hydrate'
+
+import { getIdsFromDirectory, getFileContents } from '../../utils/fs'
+
+const components = {}
+
+export default function BlogPost ({ source, frontMatter }) {
+  const content = hydrate(source, { components })
+
+  return (
+    <div style={{margin: '25px'}}>
+      <h1>{frontMatter.title}</h1>
+      {content}
+    </div>
+  )
+}
+
+export async function getStaticPaths() {
+  const paths = getIdsFromDirectory('blogSource')
+  return {
+    paths,
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }) {
+  const source = await getFileContents('blogSource', params.id)
+  const { content, data } = matter(source)
+
+  const mdxSource = await renderToString(content, { components, scope: data })
+  return { 
+    props: { 
+      source: mdxSource, 
+      frontMatter: data, 
+    } 
+  }
+}
+```
+
+We can now finally render our blog post and visit it at `localhost:3000/blog/sample-post`.
+
+<img src="/blog/toc-for-mdx-blog/img1.png" alt="initial rendering of blog post without table of contents" />
+
+## Setting Up The Table of Contents
+
+We can now add a table of contents to our blog post. Here is what we need to do:
+
+  - Add an ID to all H2 Elements in the markdown content
+  - Create a Table of Contents component consisting of a series of links to those H2 Elements
+  - Automatically update the styling of the links based on the reader's position on the page
+
+### Attaching IDs To H2 Elements Programmatically
+
+In order to link to different sections, each H2 Element in our markdown will need to have an [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug) ID automatically added to it. Create a `components` directory at the project root and add a `CustomH2` component:
+
+```javascript
+import slugify from '../utils/slugify'
+
+const CustomH2 = ({children}) => {
+
+  return (<h2 id={slugify(children)}>{children}</h2>)
+}
+
+export default CustomH2
+```
+
+This slugify utility function (found on StackOverflow) can be added to the `utils` directory:
+
+```javascript
+const slugify = text =>
+  text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+
+export default slugify
+```
+
+We can now tell `next-mdx-remote` to use this CustomH2 component to replace any H2 element from the MDX file.
+
+```javascript {3,5}
+// pages/blog/[id].js:
+
+import CustomH2 from '../../components/CustomH2'
+const components = {
+  h2: CustomH2
+}
+```
+Each H2 Element can now be linked to programmatically. We now need an array of all H2 elements that we can pass to the table of contents component.
+
+### Querying for H2 Elements in getStaticProps
+
+In `getStaticProps` we will pick out the H2 elements from the markdown and pass them to the React component as a prop called `headings`.
+
+```javascript {4-7,16}
+export async function getStaticProps({ params }) {
+  const source = await getFileContents('blogSource', params.id)
+
+  const headings = source
+  .split('\n')
+  .filter(line=> line.match(/^##\s/))
+  .map(line=> line.replace(/^##\s/, ''))
+
+  const { content, data } = matter(source)
+
+  const mdxSource = await renderToString(content, { components, scope: data })
+  return { 
+    props: { 
+      source: mdxSource, 
+      frontMatter: data,
+      headings
+    } 
+  }
+}
+```
+We can now pass this prop through our React component to a new component called TOC.
+
+## Table Of Contents Component
+
+Create a component in the `components` directory called `TOC.js`:
+
+```javascript
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import slugify from '../utils/slugify'
+
+const LinkInTOC = ({heading}) => {
+  // NextJS router object used to get current pathname
+  const { query } = useRouter()
+
+  return (
+    <div>
+      <Link href={`/blog/${query.id}#${slugify(heading)}`}>{heading}</Link>
+    </div>  
+  )
+}
+
+const TOC = ({headings}) => {
+  return (
+    <nav style={{position: 'fixed', top: '0', background: 'white'}}>
+      {headings.map(h=> 
+        <LinkInTOC 
+          heading={h} 
+          key={h} 
+        />
+      )}
+    </nav>
+  )
+}
+
+export default TOC
+```
+Import and use this TOC component in `[id].js` and we now have a table of contents that can be used to navigate the post.
+
+<img src='/blog/toc-for-mdx-blog/img2.png' alt="blog post with table of contents for navigation" />
+
+The last step is to dynamically update the styling of the links depending on where in the post the reader is.
+
+## Updating Link Styling With useActiveId Custom Hook
+
+We will write a [custom hook](https://reactjs.org/docs/hooks-custom.html) to keep track of which section the reader is in. It takes as its argument an array of DOM elements to track. For each element provided, the Intersection observer will track whether or not it is near the top of the screen. Whenever an H2 element approaches the top of the screen, the Intersection Observer will update the activeId state variable. The Table of Contents can then pass the activeId as a prop to its children, which will turn red if their ID matches the active ID.
+
+```javascript
+
+import { useEffect, useState } from "react";
+
+function useActiveId(itemIds) {
+  const [activeId, setActiveId] = useState(``);
+
+  useEffect(() => {
+    // Attach intersection observer when DOM has rendered.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        /* Describes what should happen when each element
+           approaches the top of the screen */
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: `0% 0% -80% 0%` }
+    );
+
+    itemIds.forEach((id) => {
+      observer.observe(document.getElementById(id));
+    });
+
+    return () => {
+      // Remove Intersection Observer on leaving page
+      observer.disconnect()
+    };
+  }, [itemIds]);
+
+  return activeId;
+}
+
+export default useActiveId
+
+```
+
+This hook is then used in `TOC.js` to enable the links to update their styling whenever the active ID changes.
+
+```javascript {3,4,6,8,11,18,19,27}
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import slugify from '../utils/slugify'
+import useActiveId from '../hooks/useActiveId'
+
+const LinkInTOC = ({heading, active}) => {
+  const { query } = useRouter()
+  const slug = slugify(heading)
+
+  return (
+    <div style={active===slug ? {color: 'red'} : {color: 'black'}}>
+      <Link href={`/blog/${query.id}#${slugify(heading)}`}>{heading}</Link>
+    </div>  
+  )
+}
+
+const TOC = ({headings}) => {
+  const headingIds = headings.map(heading=>slugify(heading))
+  const activeId = useActiveId(headingIds)
+
+  return (
+    <nav style={{position: 'fixed', top: '0', background: 'white'}}>
+      {headings.map(h=> 
+        <LinkInTOC 
+          heading={h} 
+          key={h} 
+          active={activeId}
+        />
+      )}
+    </nav>
+  )
+}
+
+export default TOC
+```
+
+The Table of Contents can now be used to navigate the post, and will update link styling as the reader scrolls. 
+
+<img src="/blog/toc-for-mdx-blog/img3.gif" alt="Finished blog post with updating table of contents" />
+
+The next time I revisit this project, I will probably refactor to simplify the use of the `slugify` function.
+
+The example project is available on my [github](https://github.com/nsmarino/toc-mdx-example).
+
