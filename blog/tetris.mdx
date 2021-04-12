@@ -15,7 +15,7 @@ The p5js library is basically a set of utilities wrapped around the HTML5 Canvas
 
 After staring at a jpeg of a tetris game for a while, I figured I should start by setting up a grid for the pieces (which i will refer to as 'tetrominos' for this rest of this post) to move around on.
 
-```javascript {1,2}
+```javascript
 // Sketch.js:
 const tileCount = 10
 let tileSize
@@ -185,9 +185,8 @@ function Block(x,y,color) {
 ```
 The following lines can be added to sketch.js:
 
-```javascript
+```javascript {4,18}
 // Sketch.js:
-
 const tileCount = 10
 let tileSize
 let speed = 15
@@ -242,7 +241,7 @@ function draw() {
 
 We can add tile info to this array every time a tetromino comes to rest on the ground.
 
-```javascript
+```javascript {9-19}
 // Tetromino.js:
 
 // ...
@@ -283,7 +282,7 @@ function draw() {
 ## Handling Collisions
 As can be seen above, our tetrominos are dropping one by one, but aren't yet aware of each other. Let's add the ability for the active tetromino's blocks to check their location against our array of filled tiles, so that the tetromino will only drop if the path is clear.
 
-```javascript
+```javascript {9,14-19}
 // Tetromino.js:
 
 function Block(x,y,color) {

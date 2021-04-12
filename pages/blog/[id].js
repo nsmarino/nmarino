@@ -48,6 +48,8 @@ export default function BlogPost ({ source, frontMatter, headings }) {
         <div>
         {content}
         </div>
+        <hr />
+        <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
 
       </main>
     </Layout>
@@ -59,7 +61,11 @@ const styles = css`
   /* flex: 2 0 600px; */
   margin: 50px;
   margin-left: 350px;
-  padding-bottom: 350px;
+  padding-bottom: 50px;
+  hr {
+    border: none;
+    border-top: 1px solid black;
+  }
 
   .dateAndWordCount {
     display: flex;

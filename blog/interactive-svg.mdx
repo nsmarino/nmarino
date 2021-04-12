@@ -291,7 +291,7 @@ export const turnGear = (target) =>
 
 I then updated the ChapterOne component so clicking the lever triggers the pullLever animation...which updates the gearsTurning state...and which, on completion, fires a function that will play or pause the turnGear animation on the big gear and the little gear. I decided to use a useState hook for keeping track of whether or not the gears were turning in observance of the principle of 'separation of concerns': Greensock for animations, React for state management!
 
-```javascript
+```javascript {4,7,8,11-31,45-46}
 import useTimelines from '../hooks/useTimelines'
 import { useState } from 'react'
 import { chapterOneView} from '../constants'
