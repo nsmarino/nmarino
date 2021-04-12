@@ -7,4 +7,4 @@ wordCount: 876
 order: 4
 ---
 
-When working on Megalith, I was working closely with the Stripe and Printful APIs in addition to my own codebase. I needed to find a way to test the critical path of the application without constantly making calls to these external APIs. How to do it without mountains of boilerplate?
+When working on Megalith, I was working closely with the Stripe and Printful APIs in addition to my own codebase. I needed to find a way to test the critical path of the application without constantly making calls to these external APIs. The solution I found was to use [Cypress](https://www.cypress.io/) for end-to-end testing of the "purchaser's path" and mock all calls to external APIs with [Mock Service Worker](https://mswjs.io/). It was an immense relief to finally find Mock Service Worker and realize it had exactly what I needed; this blog post will walk through how to set up a simplified MSW integration for NextJS.

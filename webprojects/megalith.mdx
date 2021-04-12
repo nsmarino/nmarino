@@ -37,16 +37,51 @@ images: [
 ]
 ---
 
-Created in collaboration with product designer [Graham Rice]('/'), Megalith is an e-commerce site that serves a NextJS frontend for a Printful backend. Payments are controlled with Stripe. Visit the site at megalith.supply, or explore the source code on github.
+Created in collaboration with product designer [Graham Rice](https://www.lineworkshop.com/), Megalith is an e-commerce site that serves a NextJS frontend for a Printful backend. Payments are controlled with Stripe. [Visit the site](https://megalith2.vercel.app/) at megalith.supply, or explore the source code on [github](https://github.com/nsmarino/piranesi).
 
 <Detail sum="Integration with Printful for dropshipping products">
-CONTENT HERE
+
+I use [Printful](https://www.printful.com/) to manufacture and ship Megalith products on-demand. Printful makes available an API so that developers can closely integrate their sites with Printful manufacturing and shipping services.
+
+The Printful API is an umbrella for a few different endpoints, including `products`, which contains information about the shirts and tote bags which can be used in product design, the `store` endpoint, which contains information on the items sold through Megalith, and the `orders` API, which can be used to create, modify, read or delete orders.
+
+I organized my app's integration with Printful into two distinct sections. In the `datasources` directory, I set up several functions to collect information about Megalith products which are gathered at build time and used to make the static homepage of the site. I found that the Printful API was not designed particularly well for this use case, and I had to make more GET requests than I would have liked, but these functions run only at build time. Also in the `datasources` directory I keep a folder called `cms` which exports an array of basic product information: name, cost, item description. This could eventually be refactored if I wanted to source product information from an external API.
+
+The build-time interaction with Printful is now taken care of. The app also needs to communicate with Printful during the checkout process. I use the NextJS Pages API to run these API requests as serverless functions. During checkout, calls are made to Printful to estimate order costs and to create a draft order. This draft order will then wait for the rest of the checkout process (using Stripe to process payments) to complete.
+
+When the order has been completed, another serverless function will receive a webhook from Stripe with the ID of the order, and send a POST request to Printful to fulfill the order.
+
 </Detail>
 
 <Detail sum="Integration with Stripe for payments">
-CONTENT HERE
+
+Credit card payments are handled by [Stripe](https://stripe.com/). I added the packages `@stripe/stripe-js` and `@stripe/react-stripe-js` to the application, then wrapped the entire app in a Stripe Provder component:
+
+```javascript
+// components/StripeProvider.tsx
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Used in pages/_app.tsx
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY);
+
+const StripeProvider:React.FC = ({ children }) => 
+  <Elements stripe={stripePromise}>
+    {children}
+  </Elements>;
+
+export default StripeProvider;
+```
+
+The `@stripe/react-stripe-js` package provided me with two hooks which I then used on the Checkout page: the useElements hook, which allowed me to grab the value of a special CardElement component located on the checkout page, and the useStripe hook, which allowed me to access my Stripe account and process payments with the card from the CardElement payment.
+
 </Detail>
 
 <Detail sum="Testing critical paths with Cypress">
-CONTENT HERE
+
+This is an e-commerce site and it is important to know that the user can add an item to their cart, enter their payment information, have their card charged for the purchase, and have the product show up at their doorstep. This 'critical path' needs an automated test to ensure that the underlying logic is rock solid. I have used Cypress to automate testing of this path. 
+
+However, Megalith also works closely with the Printful and Stripe APIs. I am able to test only the code I wrote by mocking HTTP requests to Printful and Stripe using [Mock Service Worker](https://mswjs.io/), which I discuss in more detail in a [blog post](https://www.nmarino.dev/blog/using-msw-for-cypress-testing).
+
 </Detail>
