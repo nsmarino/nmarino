@@ -37,7 +37,7 @@ images: [
 ]
 ---
 
-Created in collaboration with product designer [Graham Rice](https://www.lineworkshop.com/), Megalith is an e-commerce site that serves a NextJS frontend for a Printful backend. Payments are controlled with Stripe. [Visit the site](https://megalith2.vercel.app/) at megalith.supply, or explore the source code on [github](https://github.com/nsmarino/piranesi).
+Created in collaboration with product designer [Graham Rice](https://www.lineworkshop.com/), Megalith is an e-commerce site that serves a NextJS frontend for a Printful backend. Payments are controlled with Stripe. [Visit the site](https://megalith2.vercel.app/), or explore the source code on [github](https://github.com/nsmarino/piranesi).
 
 <Detail sum="Integration with Printful for dropshipping products">
 
@@ -55,7 +55,7 @@ When the order has been completed, another serverless function will receive a we
 
 <Detail sum="Integration with Stripe for payments">
 
-Credit card payments are handled by [Stripe](https://stripe.com/). I added the packages `@stripe/stripe-js` and `@stripe/react-stripe-js` to the application, then wrapped the entire app in a Stripe Provder component:
+Credit card payments are handled by [Stripe](https://stripe.com/). I added the packages `@stripe/stripe-js` and `@stripe/react-stripe-js` to the application, then wrapped the entire app in a Stripe Provider component:
 
 ```javascript
 // components/StripeProvider.tsx
