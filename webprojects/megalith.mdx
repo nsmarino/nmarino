@@ -41,7 +41,7 @@ Created in collaboration with product designer [Graham Rice](https://www.linewor
 
 <Detail sum="Integration with Printful for dropshipping products">
 
-I use [Printful](https://www.printful.com/) to manufacture and ship Megalith products on-demand. Printful makes available an API so that developers can closely integrate their sites with Printful manufacturing and shipping services.
+I use [Printful](https://www.printful.com/) to manufacture and ship Megalith products on-demand. Printful offers an [API](https://www.printful.com/docs/index) that developers can use to integrate their sites with Printful services.
 
 The Printful API is an umbrella for a few different endpoints, including `products`, which contains information about the shirts and tote bags which can be used in product design, the `store` endpoint, which contains information on the items sold through Megalith, and the `orders` API, which can be used to create, modify, read or delete orders.
 
@@ -49,17 +49,17 @@ The app communicates with the Printful API at three different moments:
 
 ### Sourcing product information at build time
 
-When the site is built, [several requests](https://github.com/nsmarino/piranesi/blob/main/datasources/printful/printful.ts) are made to different branches of the Printful API. The app receives a list of products from Megalith's Printful account, and for each product a few extra requests are made to get size and variant information. I don't like how many network requests are necessary for the information I need, but these requests are made only at build time. I keep these functions in the `datasources/printful` directory.
+When the site is built, [several requests](https://github.com/nsmarino/piranesi/blob/main/datasources/printful/printful.ts) are made to different branches of the Printful API. The app receives a list of products from Megalith's Printful account, and for each product a few extra requests are made to get size and variant information. Due to the way the Printful API is designed, I was forced to make more network requests than I would have liked, but these requests are made only at build time. I keep these functions in the `datasources/printful` directory.
 
 Once product information is received from Printful, I add some additional information to each product object from the file `datasources/cms/cms.ts`. This is where I store and edit things like the product description and the title of each product, because I cannot edit those things from my Printful account.
 
 ### Making Requests To Printful During Checkout
 
-During the checkout process, two calls to Printful are made. These are handled by serverless functions in the NextJS Pages API. After a customer provides their address, Printful provides an estimate of tax and shipping costs. Once the customer had entered their card information, a second request is made to Printful to create a draft order. The information from this order is then sent to Stripe to handle payment, and the order will remain in draft form until the Stripe payment succeeds.
+During the checkout process, two calls to Printful are made. These are handled by serverless functions in the NextJS Pages API. After a customer provides their address, Printful provides an estimate of tax and shipping costs. Once the customer had entered their card information, a second request is made to Printful to create a draft order. The information from this draft is then sent to Stripe to handle payment, and the order will remain in draft form until the Stripe payment succeeds.
 
-### Fulfilling An Order After Payment Succeeds
+### Confirming An Order After Payment Succeeds
 
-When the order has been completed, another serverless function will receive a webhook from Stripe with the ID of the order, and send a POST request to Printful to fulfill the order.
+When the order has been completed, another serverless function will receive a webhook from Stripe with the ID of the order, and send a POST request to Printful to confirm the order.
 
 </Detail>
 
@@ -106,7 +106,9 @@ When Stripe receives the client secret, it can then process the payment. This tw
 
 This is an e-commerce site and it is important to know that the user can add an item to their cart, enter their payment information, have their card charged for the purchase, and have the product show up at their doorstep. This 'critical path' needs an automated test to ensure that the underlying logic is rock solid. I have used [Cypress](https://www.cypress.io/) to automate testing of this path. 
 
-However, Megalith also works closely with the Printful and Stripe APIs. I am able to test only the code I wrote by mocking HTTP requests to Printful and Stripe using [Mock Service Worker](https://mswjs.io/). I learned about this workflow, of using Cypress for end-to-end testing and MSW for mocking network requests, from the blog post [Modern React testing, part 4: Cypress and Cypress Testing Library
+However, Megalith also works closely with the Printful and Stripe APIs. I am able to test only the code I wrote by mocking HTTP requests to Printful using [Mock Service Worker](https://mswjs.io/). I learned about this workflow, of using Cypress for end-to-end testing and MSW for mocking network requests, from the blog post [Modern React testing, part 4: Cypress and Cypress Testing Library
 ](https://blog.sapegin.me/all/react-testing-4-cypress/) by Artem Sapegin. I heartily recommend his entire series on React testing.
+
+I found [this npm package](https://github.com/dbalatero/cypress-plugin-stripe-elements) extremely helpful when testing Stripe integration with Cypress.
 
 </Detail>
