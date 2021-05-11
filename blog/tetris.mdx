@@ -33,7 +33,29 @@ function draw() { // This will loop
 ## Creating the Tetrominos
 I began by making a simple tetromino of a random shape that falls from the top of the screen and comes to rest at the bottom of the screen. I created a new file, 'Tetromino.js', and placed it in my index.html before the sketch.js file so that the sketch.js file has access to it.
 
-There are [seven basic Tetromino shapes](https://tetris.fandom.com/wiki/Tetromino?file=Tetromino_image.png). We can represent them as JavaScript objects, each with a color and an array of strings that each depict a possible position the tetromino can be in.
+There are [seven basic Tetromino shapes](https://tetris.fandom.com/wiki/Tetromino?file=Tetromino_image.png). We can represent them as JavaScript objects, each with a color and an array of strings that each depict a possible position the tetromino can be in. Here's an example of a Tetromino object:
+
+```javascript
+{
+    color: 'lightblue',
+    shapes:[
+`x..-
+ xxx-
+ ...`,
+`.xx-
+ .x.-
+ .x.`,
+`...-
+ xxx-
+ ..x`,
+`.x.-
+ .x.-
+ xx.`,   
+    ]
+  },
+```
+
+
 
 I created a Tetromino [constructor function](https://javascript.info/constructor-new) for creating tetromino objects. Here we can define the properties that each tetromino has (such as shape, color, and position) and the actions it can take (such as rotating and moving). Once this function is written, we can use it in our sketch.js function to make tetrominos.
 
@@ -335,7 +357,7 @@ Let's add some code to allow the player to move the active tetromino left and ri
 
 function keyPressed() {
   const activeTet = tetromino
-
+  // These functions don't exist yet but we will soon add them to the Tetromino.
   if(keyCode===LEFT_ARROW) {
     if (activeTet.canGoLeft()) activeTet.goLeft()
   }
@@ -349,7 +371,7 @@ function keyPressed() {
 }
 ```
 
-It is often helpful to write out the logic you want before actually writing the necessary functions. That said, let's now dip into Tetromino.js and give our tetromino the ability to go right and left. Just like when moving down, we will first check if the path is clear for the tetromino's four blocks, then move the tetromino if we get the go-ahead.
+Now that we have identified the behavior we want, let's write the actual functions for going left and right. Just like when moving down, we will first check if the path is clear for the tetromino's four blocks, then move the tetromino if we get the go-ahead.
 
 ```javascript
 // Tetromino.js:
