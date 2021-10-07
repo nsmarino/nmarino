@@ -7,11 +7,42 @@ import { sectionLabel, topLine } from 'styles/partials'
 
 import sort from 'utils/sort'
 
+const tempProjects = [
+  {
+    desc: "Online menu: Eleventy frontend sourced from lightweight Netlify CMS, a whole lot of CSS",
+    images: [
+      {
+        src: '/webprojects/kind-regards/kindregards.png',
+        width: 1896,
+        height: 948,
+        alt: 'Kind Regards NYC'
+      },
+    ],
+    order: 1,
+    slug: "https://www.kindregardsnyc.com/",
+    title: "Kind Regards NYC"
+  },
+  {
+    desc: "Multimedia portfolio: React frontend with heavily customized Sanity CMS backend",
+    images: [
+      {
+        src: '/webprojects/kyle-sauer-portfolio/ksp.png',
+        width: 1912,
+        height: 945,
+        alt: 'Kyle Sauer Portfolio'
+      },
+    ],
+    order: 2,
+    slug: "https://www.kylesauer.com/",
+    title: "Kyle Sauer Portfolio"
+  },
+]
 export default function WebProjects({ projects }) {
+
   return (
     <section css={styles}>
       <h2>Web Projects</h2>
-      {projects.sort(sort).map(project=><ProjectCard project={project} key={project.slug} />)}
+      {tempProjects.sort(sort).map(project=><ProjectCard project={project} key={project.slug} />)}
     </section>
   )
 }

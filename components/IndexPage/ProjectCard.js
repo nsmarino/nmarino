@@ -8,7 +8,7 @@ import { cardHead, cardShape, sectionText } from 'styles/partials'
 export default function ProjectCard({ project }) {
 
   return (
-    <Link href={`webprojects/${project.slug}`}>
+    <a href={project.slug} target="_blank" rel="noopener noreferrer">
     <div css={styles}>
       <div className="wrapper">
         <Image
@@ -22,7 +22,7 @@ export default function ProjectCard({ project }) {
       <h3>{project.title}</h3>
       <p>{project.desc}</p>
     </div>
-    </Link>
+    </a>
   )
 }
 

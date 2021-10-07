@@ -35,7 +35,7 @@ export default function WebProject ({ source, frontMatter }) {
 
   return (
     <Layout title={frontMatter.title}>
-      <div css={containerStyles}>
+      {/* <div css={containerStyles}>
       <main css={styles}>
       <Link href="/"><span className="navToIndex">« Nicholas Marino</span></Link>
       <h1>{frontMatter.title}</h1>
@@ -44,7 +44,7 @@ export default function WebProject ({ source, frontMatter }) {
 
       <Images images={frontMatter.images} />
       </div>
-
+ */}
     </Layout>
   )
 }
