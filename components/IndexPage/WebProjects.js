@@ -9,7 +9,7 @@ import sort from 'utils/sort'
 
 const tempProjects = [
   {
-    desc: "Online menu: Eleventy frontend sourced from lightweight Netlify CMS, a whole lot of CSS",
+    desc: "Online menu: Eleventy frontend sourced from lightweight Netlify CMS, a whole lot of CSS. [DEVELOPMENT]",
     images: [
       {
         src: '/webprojects/kind-regards/kindregards.png',
@@ -23,7 +23,21 @@ const tempProjects = [
     title: "Kind Regards NYC"
   },
   {
-    desc: "Multimedia portfolio: React frontend with heavily customized Sanity CMS backend",
+    desc: "(Work in progress) E-commerce: Headless Shopify for independent bookstore in Lower East Side. [DEVELOPMENT]",
+    images: [
+      {
+        src: '/webprojects/sweet-pickle/sweetpickle.png',
+        width: 1893,
+        height: 921,
+        alt: 'Sweet Pickle'
+      },
+    ],
+    order: 3,
+    slug: "https://sweet-pickle.netlify.app/",
+    title: "Sweet Pickle Books"
+  },
+  {
+    desc: "Multimedia portfolio: React frontend with heavily customized Sanity CMS backend. [DEVELOPMENT]",
     images: [
       {
         src: '/webprojects/kyle-sauer-portfolio/ksp.png',
